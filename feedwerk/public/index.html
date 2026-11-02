@@ -1,0 +1,536 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#050706">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Feedwerk">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-180.png">
+<title>Feedwerk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Grund-Look wie SchichtLohn: Glas-Paneele auf Schwarz, grüner Akzent */
+:root{
+  --bg:#050706;--glass:rgba(255,255,255,.045);--glass-2:rgba(255,255,255,.075);
+  --line:rgba(190,255,215,.10);--line-2:rgba(190,255,215,.18);
+  --fg:#eef4f0;--fg-2:#a9b7ae;--fg-3:#6f7d74;
+  --accent:#3fd47f;--accent-ink:#04140a;--accent-soft:rgba(63,212,127,.14);
+  --warn:#f2b84b;--bad:#ff6b5e;--good:var(--accent);
+  --solid:#0b100d;--header-bg:rgba(5,7,6,.78);--sunken:rgba(0,0,0,.35);
+  --f-display:"Chakra Petch","Segoe UI",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
+  --r:14px;--r-s:9px;
+  --body-bg:radial-gradient(1200px 600px at 85% -10%,rgba(63,212,127,.09),transparent 60%),radial-gradient(900px 500px at -10% 110%,rgba(63,212,127,.05),transparent 60%),var(--bg);
+  --pad:14px;--gap:10px;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme:light){:root:not([data-theme="dunkel"]){
+  --bg:#eef1ef;--glass:rgba(255,255,255,.78);--glass-2:rgba(255,255,255,.95);--line:rgba(20,60,35,.10);--line-2:rgba(20,60,35,.18);
+  --fg:#0f1a14;--fg-2:#4a5a50;--fg-3:#7d8b82;--accent:#13a35a;--accent-ink:#ffffff;--accent-soft:rgba(19,163,90,.12);
+  --solid:#ffffff;--header-bg:rgba(238,241,239,.82);--sunken:rgba(0,0,0,.04);
+  --body-bg:radial-gradient(1200px 600px at 85% -10%,rgba(19,163,90,.10),transparent 60%),var(--bg);color-scheme:light}}
+:root[data-theme="hell"]{
+  --bg:#eef1ef;--glass:rgba(255,255,255,.78);--glass-2:rgba(255,255,255,.95);--line:rgba(20,60,35,.10);--line-2:rgba(20,60,35,.18);
+  --fg:#0f1a14;--fg-2:#4a5a50;--fg-3:#7d8b82;--accent:#13a35a;--accent-ink:#ffffff;--accent-soft:rgba(19,163,90,.12);
+  --solid:#ffffff;--header-bg:rgba(238,241,239,.82);--sunken:rgba(0,0,0,.04);
+  --body-bg:radial-gradient(1200px 600px at 85% -10%,rgba(19,163,90,.10),transparent 60%),var(--bg);color-scheme:light}
+
+*{box-sizing:border-box}
+html,body{background:var(--bg);height:100%}
+body{margin:0;color:var(--fg);font:15px/1.5 var(--f-body);background:var(--body-bg);background-attachment:fixed;overflow:hidden;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+svg.i{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.app{display:flex;flex-direction:column;height:100dvh;padding-top:env(safe-area-inset-top,0px)}
+
+/* Kopfzeile */
+header.top{display:flex;align-items:center;gap:12px;padding:10px max(16px,env(safe-area-inset-right)) 10px max(16px,env(safe-area-inset-left));background:var(--header-bg);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line);flex:none;z-index:5}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--f-display);font-weight:700;font-size:23px;letter-spacing:.02em;white-space:nowrap}
+.logo{width:32px;height:32px;border-radius:var(--r-s);background:var(--accent);color:var(--accent-ink);display:grid;place-items:center}
+.logo svg{width:19px;height:19px;stroke-width:2.2}
+.search{flex:1;min-width:0;max-width:360px;margin-left:auto;display:flex;align-items:center;gap:8px;height:36px;padding:0 12px;border-radius:999px;border:1px solid var(--line-2);background:var(--glass)}
+.search input{flex:1;min-width:0;border:0;background:none;outline:none}
+.search input::placeholder{color:var(--fg-3)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:36px;padding:0 13px;border-radius:var(--r-s);border:1px solid var(--line-2);background:var(--glass-2);font-size:14px;white-space:nowrap;transition:background .15s,border-color .15s,transform .08s}
+.btn:hover{border-color:var(--accent)}
+.btn:active{transform:scale(.97)}
+.btn.p{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+.btn.ghost{background:transparent;border-color:transparent}
+.btn.ghost:hover{background:var(--glass-2)}
+.btn.ico{width:36px;padding:0}
+.btn.danger{color:var(--bad)}
+.btn.sm{height:30px;font-size:13px;padding:0 10px}
+.btn.sm.ico{width:30px}
+.spin svg{animation:sp 1s linear infinite}@keyframes sp{to{transform:rotate(360deg)}}
+
+/* Spalten */
+main{flex:1;min-height:0;display:grid;grid-template-columns:250px minmax(300px,400px) minmax(0,1fr);gap:var(--gap);padding:var(--gap) max(var(--gap),env(safe-area-inset-right)) max(var(--gap),env(safe-area-inset-bottom)) max(var(--gap),env(safe-area-inset-left))}
+.k{background:var(--glass);border:1px solid var(--line);border-radius:var(--r);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.pane{min-height:0;display:flex;flex-direction:column}
+.scroll{overflow:auto;min-height:0;flex:1;overscroll-behavior:contain}
+
+/* Seitenleiste */
+nav.side{padding:8px}
+.nav{display:flex;align-items:center;gap:9px;width:100%;padding:8px 10px;border:0;border-radius:var(--r-s);background:none;text-align:left;color:var(--fg)}
+.nav:hover{background:var(--glass-2)}
+.nav.on{background:var(--accent-soft);color:var(--accent)}
+.nav .t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nav .n{font-size:12px;font-family:var(--f-mono);color:var(--accent)}
+.nav.err .n{color:var(--bad)}
+.nav.sub{padding-left:30px;font-size:14px;color:var(--fg-2)}
+.nav.sub.on{color:var(--accent)}
+.nav img{width:16px;height:16px;border-radius:4px;flex:none}
+.nav .tw{width:16px;height:16px;display:grid;place-items:center;margin-left:-4px;color:var(--fg-3)}
+.nav .tw svg{width:14px;height:14px;transition:transform .15s}
+.nav.closed .tw svg{transform:rotate(-90deg)}
+.lbl{font-size:11px;letter-spacing:.08em;color:var(--fg-3);text-transform:uppercase;margin:14px 10px 6px;font-weight:500}
+
+/* Liste */
+.lhead{display:flex;align-items:center;gap:6px;padding:10px 12px;border-bottom:1px solid var(--line);flex:none}
+.lhead h2{font-family:var(--f-display);font-size:17px;font-weight:600;margin:0 auto 0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:999px;border:1px solid var(--line-2);background:transparent;font-size:13px;color:var(--fg-2);white-space:nowrap}
+.chip.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.chip svg{width:14px;height:14px}
+.items{padding:8px;display:flex;flex-direction:column;gap:6px}
+.it{position:relative;display:flex;gap:11px;padding:11px 12px;border-radius:var(--r-s);border:1px solid transparent;cursor:pointer;transition:background .12s,border-color .12s}
+.it:hover{background:var(--glass-2)}
+.it.sel{border-color:var(--accent);background:var(--accent-soft)}
+.it.read{opacity:.55}
+.it.read.sel{opacity:1}
+.it .th{width:56px;height:56px;border-radius:var(--r-s);background:var(--glass-2) center/cover no-repeat;flex:none}
+.it .bd{flex:1;min-width:0}
+.it .meta{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--fg-3)}
+.it .meta img{width:13px;height:13px;border-radius:3px}
+.it .meta .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex:none}
+.it .tt{font-weight:600;font-size:14.5px;line-height:1.35;margin-top:2px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.it .sm{font-size:13px;color:var(--fg-2);margin-top:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.it .acts{display:flex;gap:4px;margin-top:8px}
+.ab{display:inline-flex;align-items:center;gap:5px;height:26px;padding:0 9px;border-radius:999px;border:1px solid var(--line-2);background:transparent;font-size:12px;color:var(--fg-2)}
+.ab:hover{border-color:var(--accent);color:var(--accent)}
+.ab svg{width:14px;height:14px}
+.ab.g{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 55%,transparent)}
+.ab.on{color:var(--warn);border-color:var(--warn)}
+.more{margin:6px auto 14px}
+.empty{padding:40px 22px;text-align:center;color:var(--fg-2)}
+.empty h3{font-family:var(--f-display);color:var(--fg);margin:12px 0 4px;font-weight:600}
+.empty svg{width:40px;height:40px;color:var(--accent);stroke-width:1.4}
+
+/* Leseansicht */
+.reader article{max-width:760px;margin:0 auto;padding:26px 30px 60px}
+.reader .src{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--fg-3)}
+.reader .src img{width:16px;height:16px;border-radius:4px}
+.reader h1{font-family:var(--f-display);font-weight:700;font-size:28px;line-height:1.2;margin:10px 0 14px;letter-spacing:.005em}
+.reader .bar{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:22px}
+.content{font-size:16.5px;line-height:1.7;color:var(--fg);overflow-wrap:anywhere}
+.content img,.content video{max-width:100%;height:auto;border-radius:var(--r-s)}
+.content a{color:var(--accent)}
+.content pre{background:var(--sunken);padding:12px;border-radius:var(--r-s);overflow:auto;font-family:var(--f-mono);font-size:13.5px}
+.content code{font-family:var(--f-mono);font-size:.9em}
+.content blockquote{margin:0;padding:2px 16px;border-left:3px solid var(--accent);color:var(--fg-2)}
+.content table{border-collapse:collapse;max-width:100%;display:block;overflow:auto}
+.content td,.content th{border:1px solid var(--line-2);padding:5px 8px}
+.content h1,.content h2,.content h3{font-family:var(--f-display);line-height:1.25}
+.backbtn{display:none}
+
+/* Dialoge */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);display:flex;align-items:flex-start;justify-content:center;padding:max(40px,env(safe-area-inset-top)) 14px 20px;z-index:50;overflow:auto}
+.modal{width:100%;max-width:640px;background:var(--solid);border:1px solid var(--line-2);border-radius:var(--r);box-shadow:0 20px 60px rgba(0,0,0,.45)}
+.mh{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.mh h2{font-family:var(--f-display);font-weight:700;font-size:19px;margin:0;flex:1}
+.mb{padding:16px;display:flex;flex-direction:column;gap:16px}
+.tabs{display:flex;gap:4px;padding:10px 16px 0;flex-wrap:wrap}
+.tabs button{border:0;background:none;padding:8px 12px;border-radius:var(--r-s) var(--r-s) 0 0;color:var(--fg-2);border-bottom:2px solid transparent}
+.tabs button.on{color:var(--accent);border-bottom-color:var(--accent)}
+.field>span{display:block;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--fg-3);margin-bottom:7px;font-weight:500}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.inp,select.inp{height:38px;padding:0 12px;border-radius:var(--r-s);border:1px solid var(--line-2);background:var(--glass);outline:none;width:100%}
+.inp:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.hint{font-size:13px;color:var(--fg-3)}
+.msg{font-size:13px;color:var(--bad)}
+.fl{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)}
+.fl img{width:16px;height:16px;border-radius:4px}
+.fl .t{flex:1;min-width:0}
+.fl .t b{display:block;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fl .t small{display:block;color:var(--fg-3);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fl .t small.e{color:var(--bad)}
+.fl select{width:140px;height:32px}
+input[type=range]{width:100%;accent-color:var(--accent)}
+/* Design-Auswahl wie SchichtLohn */
+.dsstile{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
+.dss,.dsv{display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 6px;border-radius:var(--r-s);border:1px solid var(--line-2);background:transparent;font-size:12px;color:var(--fg-2)}
+.dss.on,.dsv.on{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.dss i{display:flex;width:100%;height:40px;border-radius:6px;overflow:hidden}
+.dss u{flex:1;display:flex;align-items:center;justify-content:center;padding:5px}
+.dss b{display:flex;flex-direction:column;gap:3px;width:100%;height:100%;padding:4px;border:1px solid;border-radius:4px}
+.dss s{display:block;height:4px;border-radius:2px;width:70%}
+.dss s+s{width:45%}
+.dss .std{background:#050706;padding:5px;display:flex;align-items:center}
+.dsv i{display:flex;flex-direction:column;gap:4px;width:100%;height:40px;padding:7px;border:1px solid var(--line-2);background:var(--glass-2)}
+.dsv b{height:5px;background:var(--fg-3);opacity:.5}
+.dsf{width:28px;height:28px;border-radius:50%;border:2px solid transparent;padding:0;position:relative}
+.dsf.on{outline:2px solid var(--fg);outline-offset:2px}
+.dsf.std{background:var(--glass-2);border-color:var(--line-2);font-size:9px;color:var(--fg-2);width:auto;padding:0 8px;border-radius:999px}
+.dsf.own{background:conic-gradient(red,yellow,lime,cyan,blue,magenta,red);overflow:hidden}
+.dsf.own input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.toast{position:fixed;left:50%;bottom:max(20px,env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--solid);border:1px solid var(--line-2);padding:10px 16px;border-radius:999px;font-size:14px;z-index:60;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+
+/* Mobil: eine Spalte nach der anderen */
+@media (max-width:900px){
+  main{grid-template-columns:1fr;padding:8px}
+  .pane{display:none}
+  .app[data-view="nav"] .p-nav,.app[data-view="list"] .p-list,.app[data-view="read"] .p-read{display:flex}
+  .backbtn{display:inline-flex}
+  .brand span{display:none}
+  .search{max-width:none;height:34px}
+  header.top .btn.ico,#bAdd{width:34px;height:34px}
+  .reader article{padding:16px 16px 50px}
+  .reader h1{font-size:23px}
+  header.top{gap:8px}
+  .hide-s{display:none}
+  #bAdd{width:36px;padding:0}
+}
+@media (min-width:901px) and (max-width:1180px){main{grid-template-columns:220px minmax(280px,360px) minmax(0,1fr)}}
+</style>
+</head>
+<body>
+<div class="app" id="app" data-view="list">
+  <header class="top">
+    <div class="brand"><div class="logo"><svg class="i" viewBox="0 0 24 24"><path d="M5 19a1 1 0 1 0 0-.01"/><path d="M4 4a16 16 0 0 1 16 16"/><path d="M4 11a9 9 0 0 1 9 9"/></svg></div><span>Feedwerk</span></div>
+    <label class="search"><svg class="i" viewBox="0 0 24 24"><circle cx="10" cy="10" r="7"/><path d="m21 21-6-6"/></svg><input id="q" type="search" placeholder="Artikel durchsuchen" autocomplete="off"></label>
+    <button class="btn ico" id="bRefresh" title="Alle Feeds aktualisieren"><svg class="i" viewBox="0 0 24 24"><path d="M20 11A8.1 8.1 0 0 0 4.5 9M4 5v4h4"/><path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"/></svg></button>
+    <button class="btn p" id="bAdd"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span class="hide-s">Feed</span></button>
+    <button class="btn ico" id="bSettings" title="Einstellungen"><svg class="i" viewBox="0 0 24 24"><path d="M10.3 4.3c.4-1.8 3-1.8 3.4 0a1.7 1.7 0 0 0 2.6 1.1c1.5-.9 3.3.8 2.4 2.4a1.7 1.7 0 0 0 1 2.5c1.8.5 1.8 3 0 3.5a1.7 1.7 0 0 0-1 2.5c.9 1.6-.9 3.3-2.4 2.4a1.7 1.7 0 0 0-2.6 1c-.4 1.8-3 1.8-3.4 0a1.7 1.7 0 0 0-2.6-1c-1.5.9-3.3-.8-2.4-2.4a1.7 1.7 0 0 0-1-2.5c-1.8-.5-1.8-3 0-3.5a1.7 1.7 0 0 0 1-2.5c-.9-1.6.9-3.3 2.4-2.4 1 .6 2.3.1 2.6-1.1z"/><circle cx="12" cy="12" r="3"/></svg></button>
+  </header>
+  <main>
+    <section class="pane p-nav k"><nav class="side scroll" id="nav"></nav></section>
+    <section class="pane p-list k">
+      <div class="lhead">
+        <button class="btn sm ico ghost backbtn" data-go="nav" title="Ordner"><svg class="i" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+        <h2 id="lTitle">Alle Artikel</h2>
+        <button class="chip" id="fUnread">Ungelesen</button>
+        <button class="btn sm ico ghost" id="bReadAll" title="Alle als gelesen markieren"><svg class="i" viewBox="0 0 24 24"><path d="m7 12 5 5L22 7M2 12l5 5m5-5 5-5"/></svg></button>
+      </div>
+      <div class="scroll" id="listScroll"><div class="items" id="items"></div></div>
+    </section>
+    <section class="pane p-read k reader"><div class="scroll" id="reader"></div></section>
+  </main>
+</div>
+
+<script>
+'use strict';
+/* ---------- Icons ---------- */
+const I=(d)=>`<svg class="i" viewBox="0 0 24 24">${d}</svg>`;
+const IC={
+  inbox:I('<path d="M4 13h3l3 3h4l3-3h3"/><path d="M4 13V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/>'),
+  bookmark:I('<path d="M18 7v14l-6-4-6 4V7a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4z"/>'),
+  folder:I('<path d="M5 4h4l3 3h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2"/>'),
+  chev:I('<path d="m6 9 6 6 6-6"/>'),
+  google:I('<path d="M20.9 12.2c0-.7-.1-1.3-.2-1.9H12v3.6h5a4.3 4.3 0 0 1-1.9 2.8v2.3h3c1.8-1.6 2.8-4 2.8-6.8z"/><path d="M12 21c2.5 0 4.6-.8 6.1-2.3l-3-2.3c-.8.6-1.9.9-3.1.9-2.4 0-4.4-1.6-5.1-3.8H3.8v2.4A9 9 0 0 0 12 21z"/><path d="M6.9 13.5a5.4 5.4 0 0 1 0-3.5V7.6H3.8a9 9 0 0 0 0 8.2z"/><path d="M12 6.6c1.3 0 2.5.5 3.5 1.4l2.6-2.6A9 9 0 0 0 3.8 7.6L6.9 10c.7-2.1 2.7-3.4 5.1-3.4z"/>'),
+  ext:I('<path d="M12 6H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6M11 13l9-9m-5 0h5v5"/>'),
+  eye:I('<path d="M10 12a2 2 0 1 0 4 0 2 2 0 0 0-4 0"/><path d="M21 12c-2.4 4-5.4 6-9 6s-6.6-2-9-6c2.4-4 5.4-6 9-6s6.6 2 9 6"/>'),
+  eyeoff:I('<path d="M10.6 10.6a2 2 0 0 0 2.8 2.8M16.7 16.7A8.7 8.7 0 0 1 12 18c-3.6 0-6.6-2-9-6 1.3-2.1 2.7-3.7 4.3-4.7m3-1.2A9 9 0 0 1 12 6c3.6 0 6.6 2 9 6-.7 1.2-1.4 2.2-2.2 3M3 3l18 18"/>'),
+  back:I('<path d="M15 6l-6 6 6 6"/>'),
+  x:I('<path d="M18 6 6 18M6 6l12 12"/>'),
+  trash:I('<path d="M4 7h16M10 11v6m4-6v6M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/>'),
+  edit:I('<path d="M4 20h4L18.5 9.5a2.8 2.8 0 0 0-4-4L4 16z"/>'),
+  rss:I('<path d="M5 19a1 1 0 1 0 0-.01"/><path d="M4 4a16 16 0 0 1 16 16"/><path d="M4 11a9 9 0 0 1 9 9"/>'),
+  plus:I('<path d="M12 5v14M5 12h14"/>'),
+  dl:I('<path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2M7 11l5 5 5-5M12 4v12"/>'),
+  ul:I('<path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2M7 9l5-5 5 5M12 4v12"/>'),
+  check:I('<path d="M5 12.5l4.5 4.5L19 7.5"/>'),
+};
+
+/* ---------- Zustand ---------- */
+const S={feeds:[],folders:[],counts:{unread:{},total:0,saved:0},settings:{},sel:{type:'all'},unreadOnly:true,items:[],total:0,cur:null,q:'',closed:{}};
+try{Object.assign(S.closed,JSON.parse(localStorage.getItem('fw.closed')||'{}'))}catch{}
+const $=(s)=>document.querySelector(s);
+const esc=(s)=>String(s??'').replace(/[&<>"']/g,(c)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+async function api(p,opt={}){
+  const o={...opt};if(o.json!==undefined){o.body=JSON.stringify(o.json);o.headers={'Content-Type':'application/json'};delete o.json}
+  const r=await fetch('api/'+p,o);const ct=r.headers.get('content-type')||'';
+  const d=ct.includes('json')?await r.json():await r.text();if(!r.ok)throw new Error(d.error||('Fehler '+r.status));return d;
+}
+function toast(t){const e=document.createElement('div');e.className='toast';e.textContent=t;document.body.appendChild(e);setTimeout(()=>e.remove(),2600)}
+const feedById=(id)=>S.feeds.find((f)=>f.id===id);
+function rel(ts){const s=(Date.now()-ts)/1000;if(s<60)return'gerade eben';if(s<3600)return`vor ${Math.round(s/60)} Min.`;if(s<86400)return`vor ${Math.round(s/3600)} Std.`;if(s<172800)return'gestern';
+  return new Date(ts).toLocaleDateString('de-DE',{day:'numeric',month:'short',year:new Date(ts).getFullYear()===new Date().getFullYear()?undefined:'numeric'})}
+const icoImg=(f)=>f&&f.icon?`<img src="${esc(f.icon)}" alt="" loading="lazy" onerror="this.remove()">`:'';
+function setView(v){$('#app').dataset.view=v}
+
+/* ---------- Design (wie SchichtLohn) ---------- */
+const DESIGN_STD={vorlage:'standard',stil:'',modus:'auto',akzent:'',ecken:null,rahmen:true,schatten:'aus',deckkraft:100,hintergrund:'standard',hgfarbe:'#20242a',dichte:'normal',schrift:100};
+const DESIGN_VORLAGEN={standard:['Standard',{}],glas:['Glas',{ecken:16,rahmen:true,schatten:'leicht',deckkraft:55,hintergrund:'verlauf'}],
+  flach:['Flach & eckig',{ecken:0,rahmen:true,schatten:'aus',deckkraft:100,hintergrund:'standard'}],weich:['Weich & rund',{ecken:22,rahmen:false,schatten:'weich',deckkraft:100,hintergrund:'standard'}],
+  schwebend:['Schwebend',{ecken:12,rahmen:false,schatten:'stark',deckkraft:100,hintergrund:'verlauf'}],durchsichtig:['Durchsichtig',{ecken:14,rahmen:true,schatten:'aus',deckkraft:30,hintergrund:'durchsichtig'}]};
+const DESIGN_FARBEN=['#3fd47f','#00ae42','#1e88e5','#7c4dff','#e91e63','#ff6d00','#f5b400','#00acc1','#8d6e63','#607d8b'];
+const SCHATTEN={leicht:'0 1px 2px rgba(0,0,0,.10),0 3px 10px rgba(0,0,0,.08)',weich:'0 8px 28px rgba(0,0,0,.16)',stark:'0 14px 34px rgba(0,0,0,.38),0 2px 6px rgba(0,0,0,.2)'};
+const STIL_VARS=(o)=>`--bg:${o.bg};--glass:${o.k};--glass-2:${o.k2};--line:${o.l};--line-2:${o.l2};--fg:${o.fg};--fg-2:${o.fg2};--fg-3:${o.fg3};--accent:${o.a};--accent-ink:${o.ai||'#fff'};--accent-soft:${o.as};--good:${o.ok||o.a};--warn:${o.w};--bad:${o.b};--solid:${o.so||o.k};--header-bg:${o.h};--sunken:${o.su};--body-bg:${o.bg};color-scheme:${o.cs}`;
+const STILE={
+  bambu:['Bambu Lab',{bg:'#ececee',k:'#ffffff',k2:'#f4f4f5',l:'#dedee2',l2:'#cbcbd1',fg:'#262e30',fg2:'#5b6265',fg3:'#8b9194',a:'#00ae42',as:'rgba(0,174,66,.12)',w:'#e8a317',b:'#e5484d',h:'#ffffff',su:'#f5f5f6',cs:'light'},
+    {bg:'#232326',k:'#2c2c30',k2:'#38383d',l:'#3c3c42',l2:'#4c4c53',fg:'#e8e8ea',fg2:'#a7a7ae',fg3:'#7c7c84',a:'#00ae42',as:'rgba(0,174,66,.2)',w:'#f2b84b',b:'#ff6b5e',h:'#1b1b1d',su:'#1f1f22',cs:'dark'},6],
+  solidcraft:['SolidCraft',{bg:'#eceef2',k:'#fafbfc',k2:'#f6f7f9',l:'#d0d4dc',l2:'#c3cbd6',fg:'#262a32',fg2:'#4a5868',fg3:'#6e7480',a:'#2678da',as:'#d6e6fa',ok:'#276b2c',w:'#de961e',b:'#d63636',so:'#ffffff',h:'#f6f7f9',su:'#f4f6f9',cs:'light'},
+    {bg:'#1c1f26',k:'#272b34',k2:'#2f343e',l:'#3f4552',l2:'#4a5262',fg:'#dee2e8',fg2:'#949ba8',fg3:'#7a8190',a:'#3a88ee',as:'#2a466e',ok:'#4cc27a',w:'#ecaa46',b:'#f06460',h:'#1c1f26',su:'#1c1f26',cs:'dark'},8],
+  graphit:['Graphit',{bg:'#f4f4f6',k:'#ffffff',k2:'#f7f7f9',l:'#e4e4e8',l2:'#d4d4da',fg:'#18181b',fg2:'#52525b',fg3:'#8a8a93',a:'#5b5ff0',as:'rgba(91,95,240,.12)',ok:'#16a34a',w:'#d97706',b:'#dc2626',h:'#ffffff',su:'#f4f4f6',cs:'light'},
+    {bg:'#0f0f12',k:'#18181c',k2:'#202026',l:'#2a2a31',l2:'#3a3a43',fg:'#f4f4f5',fg2:'#a1a1aa',fg3:'#71717a',a:'#818cf8',as:'rgba(129,140,248,.18)',ok:'#4ade80',w:'#fbbf24',b:'#f87171',h:'#0f0f12',su:'#0b0b0e',cs:'dark'},12],
+  nord:['Nord',{bg:'#eceff4',k:'#ffffff',k2:'#f5f7fa',l:'#d8dee9',l2:'#c5cedd',fg:'#2e3440',fg2:'#4c566a',fg3:'#7b8494',a:'#5e81ac',as:'rgba(94,129,172,.14)',ok:'#5f8a4e',w:'#c98a1b',b:'#bf616a',h:'#ffffff',su:'#eef1f6',cs:'light'},
+    {bg:'#2e3440',k:'#3b4252',k2:'#434c5e',l:'#4c566a',l2:'#5b6579',fg:'#eceff4',fg2:'#d8dee9',fg3:'#9aa3b5',a:'#88c0d0',ai:'#1f252e',as:'rgba(136,192,208,.18)',ok:'#a3be8c',w:'#ebcb8b',b:'#bf616a',h:'#2b303b',su:'#2a2f3a',cs:'dark'},10],
+  ozean:['Ozean',{bg:'#eef5fb',k:'#ffffff',k2:'#f5f9fd',l:'#d7e3ef',l2:'#c3d4e6',fg:'#0b1b2e',fg2:'#3d5470',fg3:'#7189a6',a:'#0891b2',as:'rgba(8,145,178,.12)',ok:'#059669',w:'#d97706',b:'#e11d48',h:'#ffffff',su:'#f0f6fb',cs:'light'},
+    {bg:'#0b1220',k:'#111a2e',k2:'#17223a',l:'#1e2a44',l2:'#2a3a5c',fg:'#e6edf7',fg2:'#9fb0cc',fg3:'#6b7c99',a:'#22d3ee',ai:'#04131a',as:'rgba(34,211,238,.16)',ok:'#34d399',w:'#fbbf24',b:'#fb7185',h:'#0a101c',su:'#08101c',cs:'dark'},14],
+  sand:['Sand',{bg:'#f5f1ea',k:'#fffdf9',k2:'#faf6ef',l:'#e6ddd0',l2:'#d8ccbb',fg:'#2b2420',fg2:'#5e534a',fg3:'#8f8378',a:'#c2410c',as:'rgba(194,65,12,.12)',ok:'#4d7c0f',w:'#b45309',b:'#b91c1c',h:'#fffdf9',su:'#f6f1e9',cs:'light'},
+    {bg:'#1c1917',k:'#26221f',k2:'#2f2a26',l:'#3a332d',l2:'#4a4139',fg:'#f5efe6',fg2:'#c9bfb2',fg3:'#8f8378',a:'#fb923c',ai:'#1c0d02',as:'rgba(251,146,60,.16)',ok:'#a3e635',w:'#fbbf24',b:'#f87171',h:'#1a1715',su:'#171412',cs:'dark'},10],
+  kontrast:['Kontrast',{bg:'#ffffff',k:'#ffffff',k2:'#f2f2f2',l:'#1a1a1a',l2:'#000000',fg:'#000000',fg2:'#1f1f1f',fg3:'#4a4a4a',a:'#0047ff',as:'rgba(0,71,255,.12)',ok:'#007a2e',w:'#a15c00',b:'#c40000',h:'#ffffff',su:'#f7f7f7',cs:'light'},
+    {bg:'#000000',k:'#0d0d0d',k2:'#161616',l:'#3d3d3d',l2:'#5c5c5c',fg:'#ffffff',fg2:'#dcdcdc',fg3:'#a8a8a8',a:'#ffd400',ai:'#000000',as:'rgba(255,212,0,.18)',ok:'#3ddc84',w:'#ffb020',b:'#ff5a5a',h:'#000000',su:'#000000',cs:'dark'},4]};
+const designCfg=()=>Object.assign({},DESIGN_STD,S.settings.design||{});
+function hexRgb(h){h=String(h||'').replace('#','');if(h.length===3)h=h.split('').map(c=>c+c).join('');const n=parseInt(h,16);return Number.isFinite(n)&&h.length===6?[n>>16&255,n>>8&255,n&255]:null}
+function stilCss(d){const x=STILE[d.stil];if(!x)return'';const r=`--r:${x[3]}px;--r-s:${Math.max(2,Math.round(x[3]*.6))}px;`;const sel=':root:root:root';
+  if(d.modus==='hell')return`${sel}{${STIL_VARS(x[1])};${r}}`;if(d.modus==='dunkel')return`${sel}{${STIL_VARS(x[2])};${r}}`;
+  return`${sel}{${STIL_VARS(x[2])};${r}}@media (prefers-color-scheme:light){${sel}{${STIL_VARS(x[1])}}}`}
+function designCss(d){let c=stilCss(d);const K=':is(.k,.it,.modal)';const a=hexRgb(d.akzent);let v='';
+  if(a){const ink=(0.299*a[0]+0.587*a[1]+0.114*a[2])/255>0.62?'#111':'#fff';v+=`--accent:${d.akzent};--good:${d.akzent};--accent-soft:rgba(${a.join(',')},.16);--accent-ink:${ink};`}
+  if(d.ecken!=null){const e=Math.max(0,Math.min(28,+d.ecken));v+=`--r:${e}px;--r-s:${Math.round(e*.6)}px;`}
+  if(d.hintergrund==='farbe'&&hexRgb(d.hgfarbe)){v+=`--bg:${d.hgfarbe};--body-bg:${d.hgfarbe};`;const g=hexRgb(d.hgfarbe),hell=(0.299*g[0]+0.587*g[1]+0.114*g[2])/255>0.55;
+    if(+d.deckkraft<70)v+=hell?'--fg:#1d2326;--fg-2:#3f474b;--fg-3:#5b6468;':'--fg:#f3f5f7;--fg-2:#d3d8de;--fg-3:#b3bac3;'}
+  if(d.hintergrund==='durchsichtig')v+='--bg:transparent;--body-bg:transparent;--header-bg:color-mix(in srgb,var(--solid) 92%,transparent);';
+  if(d.dichte==='kompakt')v+='--pad:10px;--gap:6px;';if(d.dichte==='luftig')v+='--pad:20px;--gap:16px;';
+  if(v)c+=`:root:root:root:root{${v}}`;
+  if(!d.rahmen)c+=`.k{border-color:transparent!important}`;
+  if(SCHATTEN[d.schatten])c+=`.k{box-shadow:${SCHATTEN[d.schatten]}!important}`;
+  const p=Math.max(0,Math.min(100,+d.deckkraft||0));
+  if(p<100)c+=`.k{background:color-mix(in srgb,var(--glass) ${p}%,transparent)!important;backdrop-filter:blur(14px) saturate(1.15);-webkit-backdrop-filter:blur(14px) saturate(1.15)}`;
+  else if(d.stil)c+=`.k{background:var(--glass)!important}`;
+  if(d.hintergrund==='verlauf')c+=`body{background:radial-gradient(1100px 620px at 88% -12%,color-mix(in srgb,var(--accent) 22%,transparent),transparent 62%),radial-gradient(900px 520px at -12% 108%,color-mix(in srgb,var(--accent) 14%,transparent),transparent 60%),var(--bg)!important;background-attachment:fixed!important}`;
+  if(d.hintergrund==='durchsichtig')c+='html,body{background:transparent!important}';
+  if(d.dichte==='kompakt')c+='.it{padding:7px 9px}.it .th{width:44px;height:44px}.it .sm{display:none}';
+  if(d.dichte==='luftig')c+='.it{padding:15px 16px}.items{gap:10px}';
+  if(+d.schrift&&+d.schrift!==100)c+=`body{font-size:${15*d.schrift/100}px}.it .tt{font-size:${14.5*d.schrift/100}px}.content{font-size:${16.5*d.schrift/100}px}`;
+  return c}
+function designAnwenden(){const d=designCfg();let el=document.getElementById('fwDesign');if(!el){el=document.createElement('style');el.id='fwDesign';document.head.appendChild(el)}
+  el.textContent=designCss(d);const t=d.modus!=='auto'?d.modus:'';if(t)document.documentElement.dataset.theme=t;else delete document.documentElement.dataset.theme;
+  requestAnimationFrame(()=>{const m=document.querySelector('meta[name=theme-color]');if(m)m.content=getComputedStyle(document.documentElement).getPropertyValue('--bg').trim()||'#050706'})}
+let dsTimer=null;
+function designSetzen(neu){S.settings.design=Object.assign({},designCfg(),neu);designAnwenden();clearTimeout(dsTimer);dsTimer=setTimeout(()=>api('settings',{method:'PATCH',json:{design:S.settings.design}}).catch(()=>{}),400)}
+
+/* ---------- Seitenleiste ---------- */
+function unreadOf(fid){return S.counts.unread[fid]||0}
+function renderNav(){
+  const sel=S.sel,on=(t,id)=>sel.type===t&&(id==null||sel.id===id)?' on':'';
+  let h=`<button class="nav${on('all')}" data-sel="all">${IC.inbox}<span class="t">Alle Artikel</span><span class="n">${S.counts.total||''}</span></button>
+    <button class="nav${on('saved')}" data-sel="saved">${IC.bookmark}<span class="t">Merkliste</span><span class="n" style="color:var(--fg-3)">${S.counts.saved||''}</span></button>`;
+  const feedRow=(f,sub)=>`<button class="nav${sub?' sub':''}${on('feed',f.id)}${f.error?' err':''}" data-sel="feed" data-id="${f.id}" title="${esc(f.error?'Fehler: '+f.error:f.url)}">${icoImg(f)||IC.rss}<span class="t">${esc(f.title)}</span><span class="n">${f.error?'!':(unreadOf(f.id)||'')}</span></button>`;
+  if(S.folders.length){h+=`<div class="lbl">Ordner</div>`;
+    for(const fo of [...S.folders].sort((a,b)=>a.name.localeCompare(b.name,'de'))){const fs=S.feeds.filter(f=>f.folderId===fo.id);const n=fs.reduce((s,f)=>s+unreadOf(f.id),0);const cl=S.closed[fo.id];
+      h+=`<button class="nav${on('folder',fo.id)}${cl?' closed':''}" data-sel="folder" data-id="${fo.id}"><span class="tw" data-tog="${fo.id}">${IC.chev}</span>${IC.folder}<span class="t">${esc(fo.name)}</span><span class="n">${n||''}</span></button>`;
+      if(!cl)h+=fs.sort((a,b)=>a.title.localeCompare(b.title,'de')).map(f=>feedRow(f,true)).join('')}}
+  const lose=S.feeds.filter(f=>!f.folderId||!S.folders.some(x=>x.id===f.folderId));
+  if(lose.length)h+=`<div class="lbl">${S.folders.length?'Ohne Ordner':'Feeds'}</div>`+lose.sort((a,b)=>a.title.localeCompare(b.title,'de')).map(f=>feedRow(f,false)).join('');
+  if(!S.feeds.length)h+=`<div class="hint" style="padding:14px 10px">Noch keine Feeds. Tippe oben auf „Feed“ oder importiere eine OPML-Datei in den Einstellungen.</div>`;
+  $('#nav').innerHTML=h;
+}
+$('#nav').addEventListener('click',(e)=>{
+  const t=e.target.closest('[data-tog]');if(t){e.stopPropagation();S.closed[t.dataset.tog]=!S.closed[t.dataset.tog];try{localStorage.setItem('fw.closed',JSON.stringify(S.closed))}catch{}renderNav();return}
+  const b=e.target.closest('[data-sel]');if(!b)return;S.sel={type:b.dataset.sel,id:b.dataset.id};renderNav();loadItems();setView('list');
+});
+
+/* ---------- Liste ---------- */
+function listTitle(){const s=S.sel;if(s.type==='saved')return'Merkliste';if(s.type==='feed')return feedById(s.id)?.title||'Feed';if(s.type==='folder')return S.folders.find(f=>f.id===s.id)?.name||'Ordner';return'Alle Artikel'}
+function query(off=0){const p=new URLSearchParams();const s=S.sel;if(s.type==='feed')p.set('feed',s.id);if(s.type==='folder')p.set('folder',s.id);
+  p.set('view',s.type==='saved'?'saved':(S.unreadOnly?'unread':'all'));if(S.q)p.set('q',S.q);p.set('offset',off);p.set('limit',60);return p.toString()}
+let loadSeq=0;
+async function loadItems(append=false){
+  const seq=++loadSeq;const off=append?S.items.length:0;
+  const d=await api('items?'+query(off));if(seq!==loadSeq)return;
+  S.items=append?S.items.concat(d.items):d.items;S.total=d.total;renderList();if(!append)$('#listScroll').scrollTop=0;
+}
+function itemHtml(it){const f=feedById(it.feedId);const sel=S.cur&&S.cur.id===it.id;
+  return`<div class="it${it.read?' read':''}${sel?' sel':''}" data-id="${it.id}">
+    ${it.image?`<div class="th" style="background-image:url('${esc(it.image).replace(/'/g,'%27')}')"></div>`:''}
+    <div class="bd"><div class="meta">${it.read?'':'<span class="dot"></span>'}${icoImg(f)}<span>${esc(it.feedTitle)}</span><span>·</span><span>${rel(it.date)}</span></div>
+    <div class="tt">${esc(it.title)}</div>${it.summary?`<div class="sm">${esc(it.summary)}</div>`:''}
+    <div class="acts"><button class="ab g" data-a="google" title="Bei Google suchen">${IC.google}Google</button>
+      <button class="ab${it.saved?' on':''}" data-a="save" title="${it.saved?'Von der Merkliste nehmen':'Merken'}">${IC.bookmark}</button>
+      ${it.link?`<button class="ab" data-a="orig" title="Original öffnen">${IC.ext}</button>`:''}
+      <button class="ab" data-a="toggle" title="${it.read?'Als ungelesen markieren':'Als gelesen markieren'}">${it.read?IC.eyeoff:IC.eye}</button></div></div></div>`}
+function renderList(){
+  $('#lTitle').textContent=listTitle();
+  const fu=$('#fUnread');fu.style.display=S.sel.type==='saved'?'none':'';fu.classList.toggle('on',S.unreadOnly);
+  if(!S.items.length){
+    const msg=S.q?['Nichts gefunden','Probier einen anderen Suchbegriff.']:S.sel.type==='saved'?['Deine Merkliste ist leer','Tippe bei einem Artikel auf das Lesezeichen, um ihn hier zu sammeln.']:S.unreadOnly&&S.feeds.length?['Alles gelesen','Neue Artikel tauchen hier automatisch auf.']:['Füge deinen ersten Feed hinzu','Eine Webseite oder Feed-Adresse reicht – Feedwerk findet den Feed selbst.'];
+    $('#items').innerHTML=`<div class="empty">${S.sel.type==='saved'?IC.bookmark:IC.rss}<h3>${msg[0]}</h3><div>${msg[1]}</div>${!S.feeds.length?`<p><button class="btn p" onclick="addDialog()">${IC.plus}Feed hinzufügen</button></p>`:''}</div>`;return}
+  $('#items').innerHTML=S.items.map(itemHtml).join('')+(S.items.length<S.total?`<button class="btn more" id="bMore">Weitere laden (${S.total-S.items.length})</button>`:'');
+}
+const itemById=(id)=>S.items.find(i=>i.id===id)||(S.cur&&S.cur.id===id?S.cur:null);
+function googleUrl(it){const q=S.settings.googleWithFeedName?`${it.title} ${it.feedTitle||''}`:it.title;return'https://www.google.com/search?q='+encodeURIComponent(q.trim())}
+function openUrl(u){const w=window.open(u,'_blank','noopener');if(!w)location.href=u}
+async function setFlag(it,patch){Object.assign(it,patch);if(S.cur&&S.cur.id===it.id)Object.assign(S.cur,patch);
+  try{const r=await api('items/'+it.id,{method:'PATCH',json:patch});S.counts=r.counts;renderNav()}catch(e){toast(e.message)}}
+async function act(a,it){
+  if(a==='google'){openUrl(googleUrl(it));if(!it.read)setFlag(it,{read:true})}
+  else if(a==='orig'){openUrl(it.link);if(!it.read)setFlag(it,{read:true})}
+  else if(a==='save'){await setFlag(it,{saved:!it.saved});toast(it.saved?'Gemerkt':'Von der Merkliste genommen')}
+  else if(a==='toggle'){await setFlag(it,{read:!it.read})}
+  else if(a==='read'){await openReader(it)}
+  renderList();if(S.cur&&S.cur.id===it.id)renderReader();
+}
+$('#items').addEventListener('click',(e)=>{
+  if(e.target.id==='bMore'){loadItems(true);return}
+  const row=e.target.closest('.it');if(!row)return;const it=itemById(row.dataset.id);if(!it)return;
+  const b=e.target.closest('[data-a]');if(b){e.stopPropagation();act(b.dataset.a,it);return}
+  const c=S.settings.clickAction||'read';
+  if(c==='google')act('google',it);else if(c==='original'&&it.link)act('orig',it);else act('read',it);
+});
+$('#fUnread').onclick=()=>{S.unreadOnly=!S.unreadOnly;api('settings',{method:'PATCH',json:{hideRead:S.unreadOnly}}).catch(()=>{});loadItems()};
+$('#bReadAll').onclick=async()=>{const s=S.sel;const body={};if(s.type==='feed')body.feed=s.id;if(s.type==='folder')body.folder=s.id;if(s.type==='saved')body.view='saved';
+  if(!confirm(`Alle Artikel in „${listTitle()}“ als gelesen markieren?`))return;const r=await api('mark-read',{method:'POST',json:body});S.counts=r.counts;renderNav();loadItems();toast('Alles als gelesen markiert')};
+let qTimer;$('#q').addEventListener('input',(e)=>{clearTimeout(qTimer);qTimer=setTimeout(()=>{S.q=e.target.value.trim();loadItems();setView('list')},250)});
+
+/* ---------- Leseansicht ---------- */
+async function openReader(it){
+  const full=await api('items/'+it.id);S.cur=full;if(!it.read){it.read=true;full.read=true;setFlag(it,{read:true})}
+  renderReader();$('#reader').scrollTop=0;setView('read');
+}
+function renderReader(){
+  const it=S.cur;if(!it){$('#reader').innerHTML=`<div class="empty" style="margin-top:12vh">${IC.rss}<h3>Wähle einen Artikel</h3><div>Mit den Tasten J und K springst du durch die Liste, G sucht bei Google.</div></div>`;return}
+  const f=feedById(it.feedId);
+  $('#reader').innerHTML=`<article>
+    <button class="btn sm ghost backbtn" data-go="list" style="margin:-6px 0 8px -8px">${IC.back}Zurück</button>
+    <div class="src">${icoImg(f)}<span>${esc(it.feedTitle)}</span>${it.author?`<span>· ${esc(it.author)}</span>`:''}<span>· ${new Date(it.date).toLocaleString('de-DE',{dateStyle:'long',timeStyle:'short'})}</span></div>
+    <h1>${esc(it.title)}</h1>
+    <div class="bar"><button class="btn sm p" data-ra="google">${IC.google}Bei Google suchen</button>
+      <button class="btn sm" data-ra="save" style="${it.saved?'color:var(--warn);border-color:var(--warn)':''}">${IC.bookmark}${it.saved?'Gemerkt':'Merken'}</button>
+      ${it.link?`<button class="btn sm" data-ra="orig">${IC.ext}Original</button>`:''}
+      <button class="btn sm" data-ra="toggle">${it.read?IC.eyeoff:IC.eye}${it.read?'Ungelesen':'Gelesen'}</button></div>
+    <div class="content">${it.html||`<p class="hint">Dieser Feed liefert nur den Titel. ${it.link?'Tippe auf „Original“ für den ganzen Artikel.':''}</p>`}</div></article>`;
+}
+$('#reader').addEventListener('click',(e)=>{const b=e.target.closest('[data-ra]');if(b&&S.cur){const it=itemById(S.cur.id)||S.cur;act(b.dataset.ra,it)}});
+document.addEventListener('click',(e)=>{const g=e.target.closest('[data-go]');if(g)setView(g.dataset.go)});
+
+/* Tastatur: j/k weiter/zurück, g Google, s merken, o Original, m gelesen umschalten, r aktualisieren */
+document.addEventListener('keydown',(e)=>{
+  if(e.target.matches('input,textarea,select')||e.metaKey||e.ctrlKey||e.altKey||document.querySelector('.ov'))return;
+  const idx=S.cur?S.items.findIndex(i=>i.id===S.cur.id):-1;const cur=idx>=0?S.items[idx]:S.cur;
+  if(e.key==='j'||e.key==='ArrowDown'&&e.shiftKey){const n=S.items[idx+1];if(n)act('read',n).then(()=>document.querySelector('.it.sel')?.scrollIntoView({block:'nearest'}))}
+  else if(e.key==='k'){const n=S.items[idx-1];if(n)act('read',n).then(()=>document.querySelector('.it.sel')?.scrollIntoView({block:'nearest'}))}
+  else if(e.key==='g'&&cur)act('google',cur);else if(e.key==='s'&&cur)act('save',cur);else if(e.key==='o'&&cur&&cur.link)act('orig',cur);
+  else if(e.key==='m'&&cur)act('toggle',cur);else if(e.key==='r')refresh();else if(e.key==='/'){e.preventDefault();$('#q').focus()}
+});
+
+/* ---------- Aktualisieren ---------- */
+async function refresh(){const b=$('#bRefresh');if(b.classList.contains('spin'))return;b.classList.add('spin');
+  try{const r=await api('refresh',{method:'POST'});apply(r.state);await loadItems();toast(r.added?`${r.added} neue Artikel`:'Keine neuen Artikel')}catch(e){toast(e.message)}finally{b.classList.remove('spin')}}
+$('#bRefresh').onclick=refresh;
+function apply(st){S.feeds=st.feeds;S.folders=st.folders;S.counts=st.counts;S.settings=st.settings;designAnwenden();renderNav()}
+async function loadState(){apply(await api('state'))}
+
+/* ---------- Dialoge ---------- */
+function dialog(title,inner,onMount){const ov=document.createElement('div');ov.className='ov';
+  ov.innerHTML=`<div class="modal" role="dialog" aria-label="${esc(title)}"><div class="mh"><h2>${esc(title)}</h2><button class="btn ico ghost" data-close title="Schließen">${IC.x}</button></div>${inner}</div>`;
+  const close=()=>{ov.remove();document.removeEventListener('keydown',esck)};const esck=(e)=>{if(e.key==='Escape')close()};
+  ov.addEventListener('click',(e)=>{if(e.target===ov||e.target.closest('[data-close]'))close()});document.addEventListener('keydown',esck);
+  document.body.appendChild(ov);onMount&&onMount(ov,close);return{ov,close}}
+const folderOpts=(sel)=>`<option value="">Ohne Ordner</option>`+S.folders.map(f=>`<option value="${f.id}"${f.id===sel?' selected':''}>${esc(f.name)}</option>`).join('');
+
+function addDialog(){
+  const pre=S.sel.type==='folder'?S.sel.id:(S.sel.type==='feed'?feedById(S.sel.id)?.folderId:'');
+  dialog('Feed hinzufügen',`<form class="mb" id="fAdd">
+    <label class="field"><span>Webseite oder Feed-Adresse</span><input class="inp" name="url" placeholder="https://www.home-assistant.io/blog" required autofocus></label>
+    <div class="row" style="align-items:flex-end"><label class="field" style="flex:1;min-width:180px"><span>Ordner</span><select class="inp" name="folder">${folderOpts(pre)}<option value="__neu">+ Neuer Ordner …</option></select></label>
+      <label class="field" style="flex:1;min-width:180px;display:none" id="nfWrap"><span>Name des neuen Ordners</span><input class="inp" name="newFolder" placeholder="3D-Druck"></label></div>
+    <div class="msg" id="addMsg"></div>
+    <div class="row" style="justify-content:flex-end"><button type="button" class="btn" data-close>Abbrechen</button><button class="btn p" id="addGo">${IC.plus}Hinzufügen</button></div>
+    <div class="hint">Tipp: Für GitHub-Releases eines Projekts nimm z. B. <code>https://github.com/home-assistant/core/releases.atom</code>.</div></form>`,
+  (ov,close)=>{const f=ov.querySelector('#fAdd');f.folder.onchange=()=>{ov.querySelector('#nfWrap').style.display=f.folder.value==='__neu'?'':'none'};
+    f.onsubmit=async(e)=>{e.preventDefault();const b=ov.querySelector('#addGo');b.disabled=true;b.textContent='Wird geladen …';ov.querySelector('#addMsg').textContent='';
+      try{let folderId=f.folder.value;if(folderId==='__neu'){const n=f.newFolder.value.trim();if(!n)throw new Error('Bitte einen Ordnernamen eingeben');folderId=(await api('folders',{method:'POST',json:{name:n}})).id}
+        const r=await api('feeds',{method:'POST',json:{url:f.url.value,folderId}});close();await loadState();S.sel={type:'feed',id:r.feed.id};renderNav();await loadItems();setView('list');toast(`„${r.feed.title}“ hinzugefügt`)}
+      catch(err){ov.querySelector('#addMsg').textContent=err.message;b.disabled=false;b.innerHTML=IC.plus+'Hinzufügen'}}});
+}
+$('#bAdd').onclick=addDialog;
+
+/* Einstellungen */
+let setTab='allgemein';
+function settingsDialog(){
+  dialog('Einstellungen',`<div class="tabs" id="sTabs"></div><div class="mb" id="sBody"></div>`,(ov)=>{const draw=()=>{
+    ov.querySelector('#sTabs').innerHTML=[['allgemein','Allgemein'],['design','Design'],['feeds','Feeds & Ordner'],['opml','Import/Export']].map(([k,t])=>`<button data-tab="${k}" class="${setTab===k?'on':''}">${t}</button>`).join('');
+    ov.querySelector('#sBody').innerHTML=setTab==='allgemein'?allgemeinHtml():setTab==='design'?designHtml():setTab==='feeds'?feedsHtml():opmlHtml()};
+    draw();ov._draw=draw;
+    ov.addEventListener('click',(e)=>settingsClick(e,ov));ov.addEventListener('change',(e)=>settingsChange(e,ov));ov.addEventListener('input',(e)=>settingsInput(e,ov))});
+}
+$('#bSettings').onclick=settingsDialog;
+const ok=IC.check.replace('class="i"','class="i" style="width:14px;height:14px"');
+const chips=(k,liste,wert,act='set')=>`<div class="row">${liste.map(([v,t])=>{const on=String(wert)===String(v);return`<button type="button" class="chip${on?' on':''}" data-${act}="${k}" data-v="${esc(String(v))}">${on?ok:''}${t}</button>`}).join('')}</div>`;
+function allgemeinHtml(){const s=S.settings;return`
+  <div class="field"><span>Beim Antippen eines Artikels</span>${chips('clickAction',[['read','In Feedwerk lesen'],['google','Bei Google suchen'],['original','Original öffnen']],s.clickAction||'read')}
+    <div class="hint" style="margin-top:6px">Der Google-Knopf ist bei jedem Artikel trotzdem immer da.</div></div>
+  <div class="field"><span>Google-Suche</span>${chips('googleWithFeedName',[[false,'Nur Titel'],[true,'Titel + Feedname']],!!s.googleWithFeedName)}
+    <div class="hint" style="margin-top:6px">„Titel + Feedname“ hilft bei kurzen Titeln wie „Release 2026.11“.</div></div>
+  <div class="field"><span>Automatisch aktualisieren</span>${chips('refreshMinutes',[[15,'15 Min.'],[30,'30 Min.'],[60,'1 Std.'],[180,'3 Std.']],s.refreshMinutes)}</div>
+  <div class="hint">Tasten: J/K nächster/vorheriger Artikel · G Google · S merken · O Original · M gelesen · R aktualisieren · / suchen</div>`}
+function designHtml(){const d=designCfg();const ecken=d.ecken==null?'':d.ecken;
+  return`<div class="field"><span>Stil</span><div class="dsstile"><button type="button" class="dss${d.stil?'':' on'}" data-ds="stil" data-v=""><i><u class="std"><b style="background:rgba(255,255,255,.06);border-color:rgba(190,255,215,.18)"><s style="background:#3fd47f"></s><s style="background:#6f7d74"></s></b></u></i><span>Standard</span></button>${Object.entries(STILE).map(([k,[t,h,dk]])=>`<button type="button" class="dss${d.stil===k?' on':''}" data-ds="stil" data-v="${k}"><i><u style="background:${h.bg}"><b style="background:${h.k};border-color:${h.l}"><s style="background:${h.a}"></s><s style="background:${h.fg3}"></s></b></u><u style="background:${dk.bg}"><b style="background:${dk.k};border-color:${dk.l}"><s style="background:${dk.a}"></s><s style="background:${dk.fg3}"></s></b></u></i><span>${t}</span></button>`).join('')}</div></div>
+  <div class="field"><span>Kacheln</span><div class="dsstile">${Object.entries(DESIGN_VORLAGEN).map(([k,[t,o]])=>{const x=Object.assign({},DESIGN_STD,o);const r=x.ecken==null?10:x.ecken;
+    return`<button type="button" class="dsv${d.vorlage===k?' on':''}" data-vorlage="${k}"><i style="border-radius:${r}px;${x.rahmen?'':'border-color:transparent;'}${SCHATTEN[x.schatten]?`box-shadow:${SCHATTEN[x.schatten]};`:''}${x.deckkraft<100?`background:color-mix(in srgb,var(--glass-2) ${x.deckkraft}%,transparent);`:''}"><b style="border-radius:${Math.round(r*.6)}px"></b><b style="border-radius:${Math.round(r*.6)}px;width:60%"></b></i><span>${t}</span></button>`}).join('')}</div></div>
+  <div class="field"><span>Hell oder dunkel</span>${chips('modus',[['auto','Wie das Gerät'],['hell','Immer hell'],['dunkel','Immer dunkel']],d.modus,'ds')}</div>
+  <div class="field"><span>Akzentfarbe</span><div class="row"><button type="button" class="dsf std${d.akzent?'':' on'}" data-ds="akzent" data-v="">Stil</button>${DESIGN_FARBEN.map(f=>`<button type="button" class="dsf${d.akzent.toLowerCase()===f?' on':''}" data-ds="akzent" data-v="${f}" style="background:${f}" aria-label="${f}"></button>`).join('')}<label class="dsf own" title="Eigene Farbe"><input type="color" id="ds_akzent" value="${esc(d.akzent||'#3fd47f')}"></label></div></div>
+  <div class="field"><span>Ecken</span>${chips('ecken',[['','Standard'],[0,'Eckig'],[6,'Leicht rund'],[14,'Rund'],[24,'Sehr rund']],ecken,'ds')}<input type="range" id="ds_ecken" min="0" max="28" step="1" value="${d.ecken==null?14:d.ecken}" aria-label="Rundung der Ecken" style="margin-top:8px"></div>
+  <div class="row" style="gap:16px;align-items:flex-start"><div class="field"><span>Rahmen</span>${chips('rahmen',[[true,'Mit'],[false,'Ohne']],d.rahmen,'ds')}</div>
+    <div class="field"><span>Schatten</span>${chips('schatten',[['aus','Aus'],['leicht','Leicht'],['weich','Weich'],['stark','Stark']],d.schatten,'ds')}</div></div>
+  <div class="field"><span>Deckkraft der Kacheln: <b id="dkOut">${d.deckkraft}%</b></span><input type="range" id="ds_deck" min="0" max="100" step="5" value="${d.deckkraft}"></div>
+  <div class="field"><span>Hintergrund</span>${chips('hintergrund',[['standard','Standard'],['verlauf','Farbverlauf'],['farbe','Eigene Farbe'],['durchsichtig','Durchsichtig']],d.hintergrund,'ds')}
+    ${d.hintergrund==='farbe'?`<input type="color" id="ds_hg" value="${esc(d.hgfarbe)}" style="margin-top:8px;width:60px;height:34px;border:0;background:none">`:''}</div>
+  <div class="row" style="gap:16px;align-items:flex-start"><div class="field"><span>Dichte</span>${chips('dichte',[['kompakt','Kompakt'],['normal','Normal'],['luftig','Luftig']],d.dichte,'ds')}</div>
+    <div class="field"><span>Schriftgröße</span>${chips('schrift',[[90,'Klein'],[100,'Normal'],[112,'Groß']],d.schrift,'ds')}</div></div>
+  <div class="row"><button class="btn" data-dsreset>Design zurücksetzen</button></div>`}
+function feedsHtml(){
+  return`<div class="field"><span>Ordner</span>${S.folders.map(f=>`<div class="fl">${IC.folder}<div class="t"><b>${esc(f.name)}</b><small>${S.feeds.filter(x=>x.folderId===f.id).length} Feeds</small></div>
+      <button class="btn sm ico ghost" data-frename="${f.id}" title="Umbenennen">${IC.edit}</button><button class="btn sm ico ghost danger" data-fdel="${f.id}" title="Löschen">${IC.trash}</button></div>`).join('')||'<div class="hint">Noch keine Ordner.</div>'}
+    <form class="row" id="nfForm" style="margin-top:10px"><input class="inp" name="n" placeholder="Neuer Ordner, z. B. Smart Home" style="flex:1"><button class="btn">${IC.plus}Anlegen</button></form></div>
+  <div class="field"><span>Feeds (${S.feeds.length})</span>${S.feeds.slice().sort((a,b)=>a.title.localeCompare(b.title,'de')).map(f=>`<div class="fl">${icoImg(f)||IC.rss}<div class="t"><b>${esc(f.title)}</b><small class="${f.error?'e':''}">${esc(f.error?'Fehler: '+f.error:f.url)}</small></div>
+      <select class="inp" data-fmove="${f.id}">${folderOpts(f.folderId)}</select>
+      <button class="btn sm ico ghost" data-rename="${f.id}" title="Umbenennen">${IC.edit}</button><button class="btn sm ico ghost danger" data-del="${f.id}" title="Entfernen">${IC.trash}</button></div>`).join('')||'<div class="hint">Noch keine Feeds.</div>'}</div>`}
+function opmlHtml(){return`<div class="field"><span>OPML exportieren</span><div class="hint" style="margin-bottom:8px">Alle Feeds mit Ordnern als Datei – zum Sichern oder für einen anderen Reader.</div>
+    <a class="btn" href="api/opml" download="feedwerk.opml">${IC.dl}OPML herunterladen</a></div>
+  <div class="field"><span>OPML importieren</span><div class="hint" style="margin-bottom:8px">Aus Feedly, Inoreader, NetNewsWire, Reeder … Ordner werden übernommen, doppelte Feeds übersprungen.</div>
+    <label class="btn">${IC.ul}Datei wählen<input type="file" id="opmlFile" accept=".opml,.xml,text/xml" hidden></label></div>`}
+async function patchSettings(p,ov){Object.assign(S.settings,p);if('hideRead'in p)S.unreadOnly=p.hideRead;ov&&ov._draw();try{S.settings=Object.assign(S.settings,await api('settings',{method:'PATCH',json:p}))}catch(e){toast(e.message)}}
+async function settingsClick(e,ov){
+  const t=e.target.closest('[data-tab]');if(t){setTab=t.dataset.tab;ov._draw();return}
+  const s=e.target.closest('[data-set]');if(s){let v=s.dataset.v;if(v==='true')v=true;else if(v==='false')v=false;else if(/^\d+$/.test(v))v=+v;patchSettings({[s.dataset.set]:v},ov);return}
+  const d=e.target.closest('[data-ds]');if(d){let v=d.dataset.v;const k=d.dataset.ds;if(v==='true')v=true;else if(v==='false')v=false;else if(k==='ecken')v=v===''?null:+v;else if(k==='schrift')v=+v;
+    const neu={[k]:v};if(k!=='stil'&&k!=='modus'&&k!=='akzent'&&k!=='schrift')neu.vorlage='eigene';designSetzen(neu);ov._draw();return}
+  const vl=e.target.closest('[data-vorlage]');if(vl){const o=DESIGN_VORLAGEN[vl.dataset.vorlage][1];const d0=designCfg();
+    designSetzen(Object.assign({},{ecken:DESIGN_STD.ecken,rahmen:true,schatten:'aus',deckkraft:100,hintergrund:'standard'},o,{vorlage:vl.dataset.vorlage,stil:d0.stil,modus:d0.modus,akzent:d0.akzent}));ov._draw();return}
+  if(e.target.closest('[data-dsreset]')){designSetzen(Object.assign({},DESIGN_STD));ov._draw();toast('Design zurückgesetzt');return}
+  const del=e.target.closest('[data-del]');if(del){const f=feedById(del.dataset.del);if(confirm(`„${f.title}“ mit allen Artikeln entfernen? Gemerkte Artikel dieses Feeds gehen auch verloren.`)){await api('feeds/'+f.id,{method:'DELETE'});if(S.sel.id===f.id)S.sel={type:'all'};await loadState();ov._draw();loadItems()}return}
+  const rn=e.target.closest('[data-rename]');if(rn){const f=feedById(rn.dataset.rename);const n=prompt('Neuer Name für den Feed',f.title);if(n&&n.trim()){await api('feeds/'+f.id,{method:'PATCH',json:{title:n.trim()}});await loadState();ov._draw()}return}
+  const fr=e.target.closest('[data-frename]');if(fr){const fo=S.folders.find(x=>x.id===fr.dataset.frename);const n=prompt('Neuer Name für den Ordner',fo.name);if(n&&n.trim()){await api('folders/'+fo.id,{method:'PATCH',json:{name:n.trim()}});await loadState();ov._draw()}return}
+  const fd=e.target.closest('[data-fdel]');if(fd){const fo=S.folders.find(x=>x.id===fd.dataset.fdel);if(confirm(`Ordner „${fo.name}“ löschen? Die Feeds darin bleiben erhalten.`)){await api('folders/'+fo.id,{method:'DELETE'});if(S.sel.id===fo.id)S.sel={type:'all'};await loadState();ov._draw();loadItems()}return}
+}
+async function settingsChange(e,ov){
+  const m=e.target.closest('[data-fmove]');if(m){await api('feeds/'+m.dataset.fmove,{method:'PATCH',json:{folderId:m.value}});await loadState();ov._draw();return}
+  if(e.target.id==='opmlFile'&&e.target.files[0]){try{const txt=await e.target.files[0].text();const r=await api('opml',{method:'POST',body:txt});toast(`${r.added} Feeds importiert – Artikel werden geladen …`);await loadState();ov._draw();setTimeout(async()=>{await loadState();loadItems()},6000)}catch(err){toast(err.message)}return}
+  if(e.target.id==='ds_akzent'){designSetzen({akzent:e.target.value});ov._draw()}
+  if(e.target.id==='ds_hg'){designSetzen({hgfarbe:e.target.value})}
+}
+function settingsInput(e,ov){
+  if(e.target.id==='ds_ecken')designSetzen({ecken:+e.target.value,vorlage:'eigene'});
+  if(e.target.id==='ds_deck'){designSetzen({deckkraft:+e.target.value,vorlage:'eigene'});const o=ov.querySelector('#dkOut');if(o)o.textContent=e.target.value+'%'}
+}
+document.addEventListener('submit',async(e)=>{if(e.target.id==='nfForm'){e.preventDefault();const n=e.target.n.value.trim();if(!n)return;await api('folders',{method:'POST',json:{name:n}});await loadState();document.querySelector('.ov')?._draw?.()}},true);
+
+/* ---------- Start ---------- */
+(async()=>{
+  try{await loadState();S.unreadOnly=S.settings.hideRead!==false;renderReader();await loadItems();
+    if(innerWidth<=900)setView('list');
+  }catch(e){$('#items').innerHTML=`<div class="empty"><h3>Server nicht erreichbar</h3><div>${esc(e.message)}</div></div>`}
+  // Alle 2 Minuten Zähler auffrischen (der Server holt die Feeds selbst ab)
+  setInterval(async()=>{try{const st=await api('state');const before=S.counts.total;apply(st);if(st.counts.total>before&&!S.items.length)loadItems()}catch{}},120000);
+})();
+</script>
+</body>
+</html>

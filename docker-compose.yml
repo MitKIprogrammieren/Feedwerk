@@ -1,0 +1,14 @@
+# Für den Container Manager der Synology (Projekt anlegen, diesen Ordner wählen)
+services:
+  feedwerk:
+    build: ./feedwerk
+    image: feedwerk:latest
+    container_name: feedwerk
+    restart: unless-stopped
+    ports:
+      - "8095:8095"
+    environment:
+      - TZ=Europe/Berlin
+      - REFRESH_MINUTES=30
+    volumes:
+      - ./data:/data
