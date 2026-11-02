@@ -7,7 +7,6 @@ Selbst gehosteter RSS-Reader im SchichtLohn-Look – läuft auf der Synology, al
 - Design-Einstellungen wie bei SchichtLohn (Stil, Kacheln, Hell/Dunkel, Akzentfarbe, Ecken, Rahmen, Schatten, Deckkraft, Hintergrund, Dichte, Schriftgröße)
 - OPML-Import/-Export, automatische Aktualisierung
 - Webseiten-Adresse reicht – der Feed wird selbst gefunden
-- **MakerWorld**: Suchbegriffe oder Designer beobachten (MakerWorld hat kein RSS, Feedwerk liest die Seiten selbst)
 
 Tasten: `J`/`K` nächster/vorheriger Artikel · `G` Google · `S` merken · `O` Original · `M` gelesen · `R` aktualisieren · `/` suchen
 

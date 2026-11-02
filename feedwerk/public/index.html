@@ -110,13 +110,6 @@ nav.side{padding:8px}
 .it .meta .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex:none}
 .it .tt{overflow-wrap:anywhere;font-weight:600;font-size:14.5px;line-height:1.35;margin-top:2px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .it .sm{font-size:13px;color:var(--fg-2);margin-top:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.it .th.big{width:84px;height:84px}
-.it .mws{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--fg-2);margin-top:4px;font-family:var(--f-mono)}
-.it .mws span{display:inline-flex;align-items:center;gap:4px}
-.it .mws svg{width:13px;height:13px}
-.seg{display:flex;border:1px solid var(--line-2);border-radius:var(--r-s);overflow:hidden}
-.seg button{flex:1;border:0;background:transparent;padding:8px 10px;color:var(--fg-2)}
-.seg button.on{background:var(--accent-soft);color:var(--accent);font-weight:600}
 .it .acts{display:flex;gap:4px;margin-top:8px}
 .ab{display:inline-flex;align-items:center;gap:5px;height:26px;padding:0 9px;border-radius:999px;border:1px solid var(--line-2);background:transparent;font-size:12px;color:var(--fg-2)}
 .ab:hover{border-color:var(--accent);color:var(--accent)}
@@ -259,8 +252,6 @@ const IC={
   plus:I('<path d="M12 5v14M5 12h14"/>'),
   dl:I('<path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2M7 11l5 5 5-5M12 4v12"/>'),
   ul:I('<path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2M7 9l5-5 5 5M12 4v12"/>'),
-  heart:I('<path d="M19.5 12.6 12 20l-7.5-7.4A5 5 0 1 1 12 6a5 5 0 1 1 7.5 6.6"/>'),
-  print:I('<path d="M17 17h2a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h2M17 9V5a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v4"/><path d="M7 13h10v8H7z"/>'),
   check:I('<path d="M5 12.5l4.5 4.5L19 7.5"/>'),
 };
 
@@ -368,12 +359,12 @@ async function loadItems(append=false){
 }
 function itemHtml(it){const f=feedById(it.feedId);const sel=S.cur&&S.cur.id===it.id;
   return`<div class="it${it.read?' read':''}${sel?' sel':''}" data-id="${it.id}">
-    ${it.image?`<div class="th${it.mw?' big':''}" style="background-image:url('${esc(it.image).replace(/'/g,'%27')}')"></div>`:''}
-    <div class="bd"><div class="meta">${it.read?'':'<span class="dot"></span>'}${icoImg(f)}<span>${esc(it.mw&&it.author?it.author:it.feedTitle)}</span><span>·</span><span>${rel(it.date)}</span>${it.lang==='de'?'<span class="tg">DE</span>':''}${it.res?`<span class="tg">${esc(it.res)}</span>`:''}</div>
-    <div class="tt">${esc(it.title)}</div>${it.mw?`<div class="mws"><span>${IC.heart}${nf(it.mw.likes)}</span><span>${IC.dl}${nf(it.mw.downloads)}</span><span>${IC.print}${nf(it.mw.prints)}</span></div>`:(it.summary?`<div class="sm">${esc(it.summary)}</div>`:'')}
-    <div class="acts">${it.mw?`<button class="ab g" data-a="orig" title="Auf MakerWorld öffnen">${IC.ext}MakerWorld</button>`:`<button class="ab g" data-a="google" title="Bei Google suchen">${IC.google}Google</button>`}
+    ${it.image?`<div class="th" style="background-image:url('${esc(it.image).replace(/'/g,'%27')}')"></div>`:''}
+    <div class="bd"><div class="meta">${it.read?'':'<span class="dot"></span>'}${icoImg(f)}<span>${esc(it.feedTitle)}</span><span>·</span><span>${rel(it.date)}</span>${it.lang==='de'?'<span class="tg">DE</span>':''}${it.res?`<span class="tg">${esc(it.res)}</span>`:''}</div>
+    <div class="tt">${esc(it.title)}</div>${it.summary?`<div class="sm">${esc(it.summary)}</div>`:''}
+    <div class="acts"><button class="ab g" data-a="google" title="Bei Google suchen">${IC.google}Google</button>
       <button class="ab${it.saved?' on':''}" data-a="save" title="${it.saved?'Von der Merkliste nehmen':'Merken'}">${IC.bookmark}</button>
-      ${it.link&&!it.mw?`<button class="ab" data-a="orig" title="Original öffnen">${IC.ext}</button>`:''}
+      ${it.link?`<button class="ab" data-a="orig" title="Original öffnen">${IC.ext}</button>`:''}
       <button class="ab" data-a="toggle" title="${it.read?'Als ungelesen markieren':'Als gelesen markieren'}">${it.read?IC.eyeoff:IC.eye}</button></div></div></div>`}
 function renderList(){
   $('#lTitle').textContent=listTitle();
@@ -383,7 +374,6 @@ function renderList(){
     $('#items').innerHTML=`<div class="empty">${S.sel.type==='saved'?IC.bookmark:IC.rss}<h3>${msg[0]}</h3><div>${msg[1]}</div>${!S.feeds.length?`<p><button class="btn p" onclick="addDialog()">${IC.plus}Feed hinzufügen</button></p>`:''}</div>`;return}
   $('#items').innerHTML=S.items.map(itemHtml).join('')+(S.items.length<S.total?`<button class="btn more" id="bMore">Weitere laden (${S.total-S.items.length})</button>`:'');
 }
-const nf=(n)=>(Number(n)||0).toLocaleString('de-DE');
 const itemById=(id)=>S.items.find(i=>i.id===id)||(S.cur&&S.cur.id===id?S.cur:null);
 function googleUrl(it){const q=S.settings.googleWithFeedName?`${it.title} ${it.feedTitle||''}`:it.title;return'https://www.google.com/search?q='+encodeURIComponent(q.trim())}
 /* Immer in neuem Tab/Browser öffnen – nie im HA-Rahmen selbst (Google & Co. verbieten das, dann bleibt die Seite schwarz) */
@@ -403,7 +393,7 @@ $('#items').addEventListener('click',(e)=>{
   const row=e.target.closest('.it');if(!row)return;const it=itemById(row.dataset.id);if(!it)return;
   const b=e.target.closest('[data-a]');if(b){e.stopPropagation();act(b.dataset.a,it);return}
   const c=S.settings.clickAction||'read';
-  if(it.mw&&c!=='read')act('orig',it);else if(c==='google')act('google',it);else if(c==='original'&&it.link)act('orig',it);else act('read',it);
+  if(c==='google')act('google',it);else if(c==='original'&&it.link)act('orig',it);else act('read',it);
 });
 $('#fUnread').onclick=()=>{S.unreadOnly=!S.unreadOnly;api('settings',{method:'PATCH',json:{hideRead:S.unreadOnly}}).catch(()=>{});loadItems()};
 $('#bReadAll').onclick=async()=>{const s=S.sel;const body={};if(s.type==='feed')body.feed=s.id;if(s.type==='folder')body.folder=s.id;if(s.type==='saved')body.view='saved';else if(S.unreadOnly)body.view='unread';if(S.q)body.q=S.q;Object.assign(body,Object.fromEntries(Object.entries(S.f).filter(([,v])=>v)));
@@ -436,9 +426,9 @@ function renderReader(){
     <button class="btn sm ghost backbtn" data-go="list" style="margin:-6px 0 8px -8px">${IC.back}Zurück</button>
     <div class="src">${icoImg(f)}<span>${esc(it.feedTitle)}</span>${it.author?`<span>· ${esc(it.author)}</span>`:''}<span>· ${new Date(it.date).toLocaleString('de-DE',{dateStyle:'long',timeStyle:'short'})}</span></div>
     <h1>${esc(it.title)}</h1>
-    <div class="bar">${it.mw?`<button class="btn sm p" data-ra="orig">${IC.ext}Auf MakerWorld öffnen</button>`:`<button class="btn sm p" data-ra="google">${IC.google}Bei Google suchen</button>`}
+    <div class="bar"><button class="btn sm p" data-ra="google">${IC.google}Bei Google suchen</button>
       <button class="btn sm" data-ra="save" style="${it.saved?'color:var(--warn);border-color:var(--warn)':''}">${IC.bookmark}${it.saved?'Gemerkt':'Merken'}</button>
-      ${it.mw?`<button class="btn sm" data-ra="google">${IC.google}Google</button>`:(it.link?`<button class="btn sm" data-ra="orig">${IC.ext}Original</button>`:'')}
+      ${it.link?`<button class="btn sm" data-ra="orig">${IC.ext}Original</button>`:''}
       <button class="btn sm" data-ra="toggle">${it.read?IC.eyeoff:IC.eye}${it.read?'Ungelesen':'Gelesen'}</button></div>
     <div class="content">${it.html||`<p class="hint">Dieser Feed liefert nur den Titel. ${it.link?'Tippe auf „Original“ für den ganzen Artikel.':''}</p>`}</div></article>`;
 }
@@ -470,38 +460,19 @@ function dialog(title,inner,onMount){const ov=document.createElement('div');ov.c
   document.body.appendChild(ov);onMount&&onMount(ov,close);return{ov,close}}
 const folderOpts=(sel)=>`<option value="">Ohne Ordner</option>`+S.folders.map(f=>`<option value="${f.id}"${f.id===sel?' selected':''}>${esc(f.name)}</option>`).join('');
 
-let addMode='rss',mwKind='search';
 function addDialog(){
   const pre=S.sel.type==='folder'?S.sel.id:(S.sel.type==='feed'?feedById(S.sel.id)?.folderId:'');
-  dialog('Quelle hinzufügen',`<form class="mb" id="fAdd">
-    <div class="field"><span>Art</span><div class="seg" id="segMode"><button type="button" data-m="rss">RSS / Webseite</button><button type="button" data-m="mw">MakerWorld</button></div></div>
-    <div id="pRss"><label class="field"><span>Webseite oder Feed-Adresse</span><input class="inp" name="url" placeholder="https://www.home-assistant.io/blog"></label>
-      <div class="hint" style="margin-top:6px">Tipp: Für GitHub-Releases eines Projekts z. B. <code>https://github.com/home-assistant/core/releases.atom</code>.</div></div>
-    <div id="pMw" style="display:none;flex-direction:column;gap:12px">
-      <div class="field"><span>Beobachten</span><div class="seg" id="segKind"><button type="button" data-k="search">Suchbegriff</button><button type="button" data-k="designer">Designer</button></div></div>
-      <label class="field"><span id="mwLbl">Suchbegriff</span><input class="inp" name="mw" placeholder="gridfinity"></label>
-      <div class="hint">Neue Modelle erscheinen automatisch, neueste zuerst. Du kannst auch einfach einen MakerWorld-Link einfügen – Suche oder Designer-Seite.</div></div>
+  dialog('Feed hinzufügen',`<form class="mb" id="fAdd">
+    <label class="field"><span>Webseite oder Feed-Adresse</span><input class="inp" name="url" placeholder="https://www.home-assistant.io/blog" required autofocus></label>
     <div class="row" style="align-items:flex-end"><label class="field" style="flex:1;min-width:180px"><span>Ordner</span><select class="inp" name="folder">${folderOpts(pre)}<option value="__neu">+ Neuer Ordner …</option></select></label>
       <label class="field" style="flex:1;min-width:180px;display:none" id="nfWrap"><span>Name des neuen Ordners</span><input class="inp" name="newFolder" placeholder="3D-Druck"></label></div>
     <div class="msg" id="addMsg"></div>
-    <div class="row" style="justify-content:flex-end"><button type="button" class="btn" data-close>Abbrechen</button><button class="btn p" id="addGo">${IC.plus}Hinzufügen</button></div></form>`,
-  (ov,close)=>{const f=ov.querySelector('#fAdd');
-    const sync=()=>{ov.querySelectorAll('#segMode button').forEach(b=>b.classList.toggle('on',b.dataset.m===addMode));ov.querySelectorAll('#segKind button').forEach(b=>b.classList.toggle('on',b.dataset.k===mwKind));
-      ov.querySelector('#pRss').style.display=addMode==='rss'?'':'none';ov.querySelector('#pMw').style.display=addMode==='mw'?'flex':'none';
-      ov.querySelector('#mwLbl').textContent=mwKind==='search'?'Suchbegriff':'Designer (Name aus der Adresse, z. B. @2Sparky, oder Link)';f.mw.placeholder=mwKind==='search'?'gridfinity':'@2Sparky';
-      (addMode==='rss'?f.url:f.mw).focus()};
-    ov.querySelector('#segMode').onclick=(e)=>{const b=e.target.closest('[data-m]');if(b){addMode=b.dataset.m;sync()}};
-    ov.querySelector('#segKind').onclick=(e)=>{const b=e.target.closest('[data-k]');if(b){mwKind=b.dataset.k;sync()}};
-    sync();
-    f.folder.onchange=()=>{ov.querySelector('#nfWrap').style.display=f.folder.value==='__neu'?'':'none'};
-    f.onsubmit=async(e)=>{e.preventDefault();const b=ov.querySelector('#addGo');ov.querySelector('#addMsg').textContent='';
-      let url;if(addMode==='rss'){url=f.url.value.trim()}else{const v=f.mw.value.trim();
-        if(/makerworld\.com/i.test(v))url=v;else if(mwKind==='search')url=v?'https://makerworld.com/de/search/models?keyword='+encodeURIComponent(v)+'&orderBy=newUploads':'';
-        else url=v?'https://makerworld.com/de/@'+encodeURIComponent(v.replace(/^@/,''))+'/upload':''}
-      if(!url){ov.querySelector('#addMsg').textContent=addMode==='rss'?'Bitte eine Adresse eingeben':'Bitte einen Suchbegriff oder Designer eingeben';return}
-      b.disabled=true;b.textContent='Wird geladen …';
+    <div class="row" style="justify-content:flex-end"><button type="button" class="btn" data-close>Abbrechen</button><button class="btn p" id="addGo">${IC.plus}Hinzufügen</button></div>
+    <div class="hint">Tipp: Für GitHub-Releases eines Projekts nimm z. B. <code>https://github.com/home-assistant/core/releases.atom</code>.</div></form>`,
+  (ov,close)=>{const f=ov.querySelector('#fAdd');f.folder.onchange=()=>{ov.querySelector('#nfWrap').style.display=f.folder.value==='__neu'?'':'none'};
+    f.onsubmit=async(e)=>{e.preventDefault();const b=ov.querySelector('#addGo');b.disabled=true;b.textContent='Wird geladen …';ov.querySelector('#addMsg').textContent='';
       try{let folderId=f.folder.value;if(folderId==='__neu'){const n=f.newFolder.value.trim();if(!n)throw new Error('Bitte einen Ordnernamen eingeben');folderId=(await api('folders',{method:'POST',json:{name:n}})).id}
-        const r=await api('feeds',{method:'POST',json:{url,folderId}});close();await loadState();S.sel={type:'feed',id:r.feed.id};S.f.cat='';S.f.res='';renderNav();await loadItems();setView('list');toast(`„${r.feed.title}“ hinzugefügt`)}
+        const r=await api('feeds',{method:'POST',json:{url:f.url.value,folderId}});close();await loadState();S.sel={type:'feed',id:r.feed.id};renderNav();await loadItems();setView('list');toast(`„${r.feed.title}“ hinzugefügt`)}
       catch(err){ov.querySelector('#addMsg').textContent=err.message;b.disabled=false;b.innerHTML=IC.plus+'Hinzufügen'}}});
 }
 $('#bAdd').onclick=addDialog;

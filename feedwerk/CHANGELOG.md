@@ -1,5 +1,8 @@
 # Änderungen
 
+## 1.2.1 – 2. November 2026
+- MakerWorld-Quelle wieder entfernt – MakerWorld sperrt automatische Abrufe, die Auswahl hat deshalb nicht funktioniert
+
 ## 1.2.0 – 2. November 2026
 - Neu: MakerWorld-Quellen – Suchbegriffe oder Designer beobachten, neue Modelle erscheinen mit Bild, Likes, Downloads und Druckzahl
 - Ein Tipp öffnet das Modell auf MakerWorld; Merkliste und Filter funktionieren auch hier

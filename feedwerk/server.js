@@ -153,58 +153,7 @@ function discover(html, base) {
   return out;
 }
 
-// ---------- MakerWorld (kein RSS – die Seiten liefern ihre Daten als __NEXT_DATA__ mit) ----------
-const MW_UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36';
-const isMakerWorld = (u) => { try { return /(^|\.)makerworld\.com$/i.test(new URL(u).hostname); } catch { return false; } };
-function normalizeMakerWorld(u) {
-  const x = new URL(u);
-  const h = /\/@([^/?#]+)/.exec(x.pathname);
-  if (h) return `https://makerworld.com/de/@${h[1]}/upload`;
-  if (/\/models\/\d+/.test(x.pathname)) throw new Error('Das ist ein einzelnes Modell – nimm einen Suchbegriff oder den Designer');
-  const kw = x.searchParams.get('keyword');
-  if (/\/search\//.test(x.pathname) && kw) {
-    const out = new URL('https://makerworld.com/de/search/models');
-    for (const [k, v] of x.searchParams) out.searchParams.set(k, v);
-    if (!out.searchParams.get('orderBy')) out.searchParams.set('orderBy', 'newUploads');
-    return out.href;
-  }
-  throw new Error('Bitte einen MakerWorld-Suchbegriff oder eine Designer-Seite angeben');
-}
-async function loadMakerWorld(url) {
-  url = normalizeMakerWorld(url);
-  const res = await fetch(url, {
-    headers: { 'User-Agent': MW_UA, Accept: 'text/html,application/xhtml+xml', 'Accept-Language': 'de-DE,de;q=0.9,en;q=0.6' },
-    redirect: 'follow', signal: AbortSignal.timeout(25000),
-  });
-  const html = await res.text();
-  const m = /<script id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/.exec(html);
-  if (!m) throw new Error(res.status === 403 || /cloudflare|cf-chl|challenge/i.test(html) ? 'MakerWorld blockt den Abruf gerade (Schutzseite) – es wird später erneut versucht' : 'MakerWorld-Seite konnte nicht gelesen werden (HTTP ' + res.status + ')');
-  const pp = JSON.parse(m[1]).props?.pageProps || {};
-  const designs = Array.isArray(pp.designs) ? pp.designs : [];
-  const user = pp.userInfo;
-  const kw = new URL(url).searchParams.get('keyword');
-  const title = user ? `MakerWorld: ${user.name || user.handle}` : `MakerWorld: „${kw}“`;
-  const fmt = (n) => (Number(n) || 0).toLocaleString('de-DE');
-  const entries = designs.filter((d) => d && d.id && !d.nsfw).map((d) => {
-    const t = d.titleTranslated || d.title || '';
-    const cover = d.cover || d.coverUrl || '';
-    const who = d.designCreator?.name || user?.name || '';
-    const handle = d.designCreator?.handle || user?.handle || '';
-    const link = `https://makerworld.com/de/models/${d.id}${d.slug ? '-' + d.slug : ''}`;
-    const body = `${cover ? `<p><img src="${esc(cover)}" alt=""></p>` : ''}`
-      + (d.titleTranslated && d.title && d.titleTranslated !== d.title ? `<p><i>${esc(d.title)}</i></p>` : '')
-      + `<p>von ${handle ? `<a href="https://makerworld.com/de/@${esc(handle)}/upload">${esc(who)}</a>` : esc(who)} · ♥ ${fmt(d.likeCount)} · ⬇ ${fmt(d.downloadCount)} · Gedruckt ${fmt(d.printCount)}×</p>`
-      + (Array.isArray(d.tags) && d.tags.length ? `<p>${d.tags.slice(0, 12).map((x) => '#' + esc(typeof x === 'string' ? x : x.name || '')).join(' ')}</p>` : '');
-    return {
-      title: t, link, guid: 'mw-' + d.id, date: d.createTime || d.publishTime, html: body, author: who, image: cover,
-      mw: { likes: d.likeCount || 0, downloads: d.downloadCount || 0, prints: d.printCount || 0, staff: !!d.isStaffPicked },
-    };
-  });
-  return { url, parsed: { title, site: url, entries } };
-}
-
 async function loadFeed(url) {
-  if (isMakerWorld(url)) return loadMakerWorld(url);
   let r = await fetchText(url);
   const looksXml = /xml|rss|atom/i.test(r.type) || /^\s*<\?xml|<rss|<feed|<rdf:RDF/i.test(r.text.slice(0, 500));
   if (!looksXml) {
@@ -219,21 +168,20 @@ async function loadFeed(url) {
 function favicon(site) { try { return new URL('/favicon.ico', site).href; } catch { return ''; } }
 
 function mergeItems(feed, entries) {
-  const known = new Map(db.items.filter((i) => i.feedId === feed.id).map((i) => [i.key, i]));
+  const known = new Set(db.items.filter((i) => i.feedId === feed.id).map((i) => i.key));
   let added = 0;
   const now = Date.now();
   for (const e of entries) {
     const key = hash(e.guid || e.link || e.title);
-    if (known.has(key)) { if (e.mw) known.get(key).mw = e.mw; continue; }
+    if (known.has(key)) continue;
     let ts = Date.parse(e.date); if (isNaN(ts) || ts > now + 86400000) ts = now;
     const html = clean(e.html, e.link || feed.site);
     db.items.push({
       id: id(), key, feedId: feed.id, title: plain(e.title) || '(ohne Titel)', link: absolutize(e.link, feed.site),
       author: plain(e.author), date: ts, html, summary: plain(e.html).slice(0, 220),
       image: absolutize(e.image, feed.site) || firstImage(html), read: false, saved: false, fetched: now,
-      ...(e.mw ? { mw: e.mw } : {}),
     });
-    known.set(key, true); added++;
+    known.add(key); added++;
   }
   // Pro Feed nur die neuesten behalten – gemerkte bleiben immer
   const mine = db.items.filter((i) => i.feedId === feed.id).sort((a, b) => b.date - a.date);

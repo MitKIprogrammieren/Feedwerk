@@ -1,6 +1,6 @@
 {
   "name": "feedwerk",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Feedwerk – selbst gehosteter RSS-Reader",
   "main": "server.js",
   "scripts": {
