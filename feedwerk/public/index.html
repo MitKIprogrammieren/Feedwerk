@@ -108,7 +108,7 @@ nav.side{padding:8px}
 .it .meta{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--fg-3)}
 .it .meta img{width:13px;height:13px;border-radius:3px}
 .it .meta .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex:none}
-.it .tt{font-weight:600;font-size:14.5px;line-height:1.35;margin-top:2px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.it .tt{overflow-wrap:anywhere;font-weight:600;font-size:14.5px;line-height:1.35;margin-top:2px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .it .sm{font-size:13px;color:var(--fg-2);margin-top:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .it .acts{display:flex;gap:4px;margin-top:8px}
 .ab{display:inline-flex;align-items:center;gap:5px;height:26px;padding:0 9px;border-radius:999px;border:1px solid var(--line-2);background:transparent;font-size:12px;color:var(--fg-2)}
@@ -117,6 +117,14 @@ nav.side{padding:8px}
 .ab.g{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 55%,transparent)}
 .ab.on{color:var(--warn);border-color:var(--warn)}
 .more{margin:6px auto 14px}
+.fbar{display:flex;flex-direction:column;gap:6px;padding:8px 12px;border-bottom:1px solid var(--line);flex:none}
+.fbar:empty{display:none}
+.frow{display:flex;align-items:center;gap:6px;overflow-x:auto;scrollbar-width:none}
+.frow::-webkit-scrollbar{display:none}
+.frow .fl2{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--fg-3);min-width:74px;font-weight:500}
+.frow .chip{padding:3px 10px;font-size:12px}
+.frow .chip i{font-style:normal;font-family:var(--f-mono);font-size:11px;opacity:.75}
+.tg{font-size:10.5px;font-weight:600;padding:1px 6px;border-radius:999px;background:var(--accent-soft);color:var(--accent);letter-spacing:.02em}
 .empty{padding:40px 22px;text-align:center;color:var(--fg-2)}
 .empty h3{font-family:var(--f-display);color:var(--fg);margin:12px 0 4px;font-weight:600}
 .empty svg{width:40px;height:40px;color:var(--accent);stroke-width:1.4}
@@ -125,7 +133,7 @@ nav.side{padding:8px}
 .reader article{max-width:760px;margin:0 auto;padding:26px 30px 60px}
 .reader .src{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--fg-3)}
 .reader .src img{width:16px;height:16px;border-radius:4px}
-.reader h1{font-family:var(--f-display);font-weight:700;font-size:28px;line-height:1.2;margin:10px 0 14px;letter-spacing:.005em}
+.reader h1{overflow-wrap:anywhere;font-family:var(--f-display);font-weight:700;font-size:28px;line-height:1.2;margin:10px 0 14px;letter-spacing:.005em}
 .reader .bar{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:22px}
 .content{font-size:16.5px;line-height:1.7;color:var(--fg);overflow-wrap:anywhere}
 .content img,.content video{max-width:100%;height:auto;border-radius:var(--r-s)}
@@ -216,6 +224,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
         <button class="chip" id="fUnread">Ungelesen</button>
         <button class="btn sm ico ghost" id="bReadAll" title="Alle als gelesen markieren"><svg class="i" viewBox="0 0 24 24"><path d="m7 12 5 5L22 7M2 12l5 5m5-5 5-5"/></svg></button>
       </div>
+      <div class="fbar" id="fbar"></div>
       <div class="scroll" id="listScroll"><div class="items" id="items"></div></div>
     </section>
     <section class="pane p-read k reader"><div class="scroll" id="reader"></div></section>
@@ -248,6 +257,7 @@ const IC={
 
 /* ---------- Zustand ---------- */
 const S={feeds:[],folders:[],counts:{unread:{},total:0,saved:0},settings:{},sel:{type:'all'},unreadOnly:true,items:[],total:0,cur:null,q:'',closed:{}};
+S.f={lang:'',cat:'',res:''};try{S.f.lang=localStorage.getItem('fw.lang')||''}catch{}
 try{Object.assign(S.closed,JSON.parse(localStorage.getItem('fw.closed')||'{}'))}catch{}
 const $=(s)=>document.querySelector(s);
 const esc=(s)=>String(s??'').replace(/[&<>"']/g,(c)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -334,23 +344,23 @@ function renderNav(){
 }
 $('#nav').addEventListener('click',(e)=>{
   const t=e.target.closest('[data-tog]');if(t){e.stopPropagation();S.closed[t.dataset.tog]=!S.closed[t.dataset.tog];try{localStorage.setItem('fw.closed',JSON.stringify(S.closed))}catch{}renderNav();return}
-  const b=e.target.closest('[data-sel]');if(!b)return;S.sel={type:b.dataset.sel,id:b.dataset.id};renderNav();loadItems();setView('list');
+  const b=e.target.closest('[data-sel]');if(!b)return;S.sel={type:b.dataset.sel,id:b.dataset.id};S.f.cat='';S.f.res='';renderNav();loadItems();setView('list');
 });
 
 /* ---------- Liste ---------- */
 function listTitle(){const s=S.sel;if(s.type==='saved')return'Merkliste';if(s.type==='feed')return feedById(s.id)?.title||'Feed';if(s.type==='folder')return S.folders.find(f=>f.id===s.id)?.name||'Ordner';return'Alle Artikel'}
 function query(off=0){const p=new URLSearchParams();const s=S.sel;if(s.type==='feed')p.set('feed',s.id);if(s.type==='folder')p.set('folder',s.id);
-  p.set('view',s.type==='saved'?'saved':(S.unreadOnly?'unread':'all'));if(S.q)p.set('q',S.q);p.set('offset',off);p.set('limit',60);return p.toString()}
+  p.set('view',s.type==='saved'?'saved':(S.unreadOnly?'unread':'all'));if(S.q)p.set('q',S.q);for(const k of ['lang','cat','res'])if(S.f[k])p.set(k,S.f[k]);p.set('offset',off);p.set('limit',60);return p.toString()}
 let loadSeq=0;
 async function loadItems(append=false){
   const seq=++loadSeq;const off=append?S.items.length:0;
   const d=await api('items?'+query(off));if(seq!==loadSeq)return;
-  S.items=append?S.items.concat(d.items):d.items;S.total=d.total;renderList();if(!append)$('#listScroll').scrollTop=0;
+  S.items=append?S.items.concat(d.items):d.items;S.total=d.total;S.facets=d.facets;renderFilters();renderList();if(!append)$('#listScroll').scrollTop=0;
 }
 function itemHtml(it){const f=feedById(it.feedId);const sel=S.cur&&S.cur.id===it.id;
   return`<div class="it${it.read?' read':''}${sel?' sel':''}" data-id="${it.id}">
     ${it.image?`<div class="th" style="background-image:url('${esc(it.image).replace(/'/g,'%27')}')"></div>`:''}
-    <div class="bd"><div class="meta">${it.read?'':'<span class="dot"></span>'}${icoImg(f)}<span>${esc(it.feedTitle)}</span><span>·</span><span>${rel(it.date)}</span></div>
+    <div class="bd"><div class="meta">${it.read?'':'<span class="dot"></span>'}${icoImg(f)}<span>${esc(it.feedTitle)}</span><span>·</span><span>${rel(it.date)}</span>${it.lang==='de'?'<span class="tg">DE</span>':''}${it.res?`<span class="tg">${esc(it.res)}</span>`:''}</div>
     <div class="tt">${esc(it.title)}</div>${it.summary?`<div class="sm">${esc(it.summary)}</div>`:''}
     <div class="acts"><button class="ab g" data-a="google" title="Bei Google suchen">${IC.google}Google</button>
       <button class="ab${it.saved?' on':''}" data-a="save" title="${it.saved?'Von der Merkliste nehmen':'Merken'}">${IC.bookmark}</button>
@@ -366,7 +376,8 @@ function renderList(){
 }
 const itemById=(id)=>S.items.find(i=>i.id===id)||(S.cur&&S.cur.id===id?S.cur:null);
 function googleUrl(it){const q=S.settings.googleWithFeedName?`${it.title} ${it.feedTitle||''}`:it.title;return'https://www.google.com/search?q='+encodeURIComponent(q.trim())}
-function openUrl(u){const w=window.open(u,'_blank','noopener');if(!w)location.href=u}
+/* Immer in neuem Tab/Browser öffnen – nie im HA-Rahmen selbst (Google & Co. verbieten das, dann bleibt die Seite schwarz) */
+function openUrl(u){const a=document.createElement('a');a.href=u;a.target='_blank';a.rel='noopener noreferrer';document.body.appendChild(a);a.click();a.remove()}
 async function setFlag(it,patch){Object.assign(it,patch);if(S.cur&&S.cur.id===it.id)Object.assign(S.cur,patch);
   try{const r=await api('items/'+it.id,{method:'PATCH',json:patch});S.counts=r.counts;renderNav()}catch(e){toast(e.message)}}
 async function act(a,it){
@@ -385,9 +396,23 @@ $('#items').addEventListener('click',(e)=>{
   if(c==='google')act('google',it);else if(c==='original'&&it.link)act('orig',it);else act('read',it);
 });
 $('#fUnread').onclick=()=>{S.unreadOnly=!S.unreadOnly;api('settings',{method:'PATCH',json:{hideRead:S.unreadOnly}}).catch(()=>{});loadItems()};
-$('#bReadAll').onclick=async()=>{const s=S.sel;const body={};if(s.type==='feed')body.feed=s.id;if(s.type==='folder')body.folder=s.id;if(s.type==='saved')body.view='saved';
+$('#bReadAll').onclick=async()=>{const s=S.sel;const body={};if(s.type==='feed')body.feed=s.id;if(s.type==='folder')body.folder=s.id;if(s.type==='saved')body.view='saved';else if(S.unreadOnly)body.view='unread';if(S.q)body.q=S.q;Object.assign(body,Object.fromEntries(Object.entries(S.f).filter(([,v])=>v)));
   if(!confirm(`Alle Artikel in „${listTitle()}“ als gelesen markieren?`))return;const r=await api('mark-read',{method:'POST',json:body});S.counts=r.counts;renderNav();loadItems();toast('Alles als gelesen markiert')};
 let qTimer;$('#q').addEventListener('input',(e)=>{clearTimeout(qTimer);qTimer=setTimeout(()=>{S.q=e.target.value.trim();loadItems();setView('list')},250)});
+
+/* ---------- Filter: Sprache, Kategorie, Qualität ---------- */
+const LANG_N={de:'Deutsch',en:'Englisch'};
+function renderFilters(){
+  const F=S.facets||{lang:[],cat:[],res:[]};
+  const row=(k,label,list,name=(v)=>v)=>{
+    if(!list.length&&!S.f[k])return'';
+    if(k!=='lang'&&list.length<2&&!S.f[k])return'';
+    const vals=list.slice();if(S.f[k]&&!vals.some(([v])=>v===S.f[k]))vals.unshift([S.f[k],0]);
+    return`<div class="frow"><span class="fl2">${label}</span><button class="chip${S.f[k]?'':' on'}" data-fk="${k}" data-fv="">Alle</button>${vals.map(([v,n])=>`<button class="chip${S.f[k]===v?' on':''}" data-fk="${k}" data-fv="${esc(v)}">${esc(name(v))} <i>${n}</i></button>`).join('')}</div>`};
+  $('#fbar').innerHTML=row('lang','Sprache',F.lang,(v)=>LANG_N[v]||v)+row('cat','Kategorie',F.cat)+row('res','Qualität',F.res);
+}
+$('#fbar').addEventListener('click',(e)=>{const b=e.target.closest('[data-fk]');if(!b)return;const k=b.dataset.fk;S.f[k]=b.dataset.fv;
+  if(k==='lang')try{localStorage.setItem('fw.lang',S.f.lang)}catch{}loadItems()});
 
 /* ---------- Leseansicht ---------- */
 async function openReader(it){

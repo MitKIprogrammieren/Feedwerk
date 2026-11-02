@@ -268,6 +268,48 @@ function state() {
     feeds: db.feeds.map((f) => ({ ...f, icon: favicon(f.site || f.url) })), counts: counts(),
   };
 }
+// Merkmale aus Release-Namen: Sprache, Kategorie, Qualität
+const LANG_DE = /(^|[.\s_\-(])(german|deutsch|ger|dl|ml)(?=[.\s_\-)]|$)/i;
+function traits(i) {
+  if (i._t) return i._t;
+  const t = i.title || '';
+  const release = !/\s/.test(t.trim()) && t.split('.').length >= 4;
+  const catM = /^\s*\[([^\]]{1,30})\]/.exec(i.summary || '') || /^\s*\[([^\]]{1,30})\]/.exec(t);
+  const resM = /(2160p|1080p|720p|576p|480p)/i.exec(t) || (/(^|[.\s_-])(uhd|4k)(?=[.\s_-]|$)/i.test(t) ? ['2160p'] : null);
+  const v = {
+    lang: release ? (LANG_DE.test(t) ? 'de' : 'en') : (LANG_DE.test(t) ? 'de' : ''),
+    cat: catM ? catM[1].trim() : '',
+    res: resM ? resM[0].toLowerCase().replace(/^.*?(\d+p)$/, '$1') : '',
+  };
+  Object.defineProperty(i, '_t', { value: v, enumerable: false, writable: true });
+  return v;
+}
+function applyTraitFilters(list, q, skip) {
+  return list.filter((i) => {
+    const t = traits(i);
+    if (q.lang && skip !== 'lang' && t.lang !== q.lang) return false;
+    if (q.cat && skip !== 'cat' && t.cat !== q.cat) return false;
+    if (q.res && skip !== 'res' && t.res !== q.res) return false;
+    return true;
+  });
+}
+function baseList(q) {
+  let list = selectItems(q);
+  if (q.view === 'unread') list = list.filter((i) => !i.read);
+  if (q.q) { const s = q.q.toLowerCase(); list = list.filter((i) => i.title.toLowerCase().includes(s) || i.summary.toLowerCase().includes(s)); }
+  return list;
+}
+function facets(q) {
+  const base = baseList(q);
+  const count = (dim) => {
+    const m = {};
+    for (const i of applyTraitFilters(base, q, dim)) { const v = traits(i)[dim]; if (v) m[v] = (m[v] || 0) + 1; }
+    return Object.entries(m).sort((a, b) => b[1] - a[1]);
+  };
+  const res = count('res').sort((a, b) => parseInt(b[0], 10) - parseInt(a[0], 10));
+  return { lang: count('lang'), cat: count('cat').slice(0, 10), res };
+}
+
 function selectItems(q) {
   let list = db.items;
   if (q.feed) list = list.filter((i) => i.feedId === q.feed);
@@ -299,15 +341,14 @@ async function api(req, res, p, q) {
   if (seg[0] === 'state' && m === 'GET') return send(res, 200, state());
 
   if (seg[0] === 'items' && m === 'GET' && !seg[1]) {
-    let list = selectItems(q);
-    if (q.view === 'unread') list = list.filter((i) => !i.read);
-    if (q.q) { const s = q.q.toLowerCase(); list = list.filter((i) => i.title.toLowerCase().includes(s) || i.summary.toLowerCase().includes(s)); }
+    let list = applyTraitFilters(baseList(q), q);
     list = [...list].sort((a, b) => b.date - a.date);
     const off = parseInt(q.offset || '0', 10), lim = Math.min(200, parseInt(q.limit || '60', 10));
     const feedsById = Object.fromEntries(db.feeds.map((f) => [f.id, f]));
     return send(res, 200, {
       total: list.length,
-      items: list.slice(off, off + lim).map(({ html, key, ...i }) => ({ ...i, feedTitle: feedsById[i.feedId]?.title || '' })),
+      items: list.slice(off, off + lim).map((it) => { const { html, key, ...i } = it; return { ...i, ...traits(it), feedTitle: feedsById[i.feedId]?.title || '' }; }),
+      facets: facets(q),
     });
   }
   if (seg[0] === 'items' && seg[1] && m === 'GET') {
@@ -324,7 +365,7 @@ async function api(req, res, p, q) {
   }
   if (seg[0] === 'mark-read' && m === 'POST') {
     const b = await json(req);
-    selectItems(b).forEach((i) => { i.read = true; });
+    applyTraitFilters(baseList(b), b).forEach((i) => { i.read = true; });
     save(); return send(res, 200, { ok: true, counts: counts() });
   }
 
