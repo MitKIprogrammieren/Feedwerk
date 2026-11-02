@@ -1,5 +1,10 @@
 # Änderungen
 
+## 1.2.0 – 2. November 2026
+- Neu: MakerWorld-Quellen – Suchbegriffe oder Designer beobachten, neue Modelle erscheinen mit Bild, Likes, Downloads und Druckzahl
+- Ein Tipp öffnet das Modell auf MakerWorld; Merkliste und Filter funktionieren auch hier
+- „Feed hinzufügen“ heißt jetzt „Quelle hinzufügen“ und hat die Wahl RSS / MakerWorld
+
 ## 1.1.0 – 2. November 2026
 - Neue Filterleiste über der Artikelliste: Sprache (Deutsch/Englisch), Kategorie und Qualität – der Sprachfilter bleibt gespeichert
 - Artikel zeigen kleine Schilder für Deutsch und Qualität (z. B. 2160p)
